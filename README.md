@@ -6,6 +6,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | package | what it covers |
 | --- | --- |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, arbitration, setpoint streaming, the gripper |
+| `rammp_base_interfaces` | commanding and observing the mobile base: chassis state, seat commands, calibration, curb traversal |
 
 ## Why these live outside the driver
 
@@ -95,8 +96,24 @@ themselves, and the reasoning matters more than the omission:
 the topic would promise something the contract cannot honour. It can arrive as a
 minor bump when a controller exists.
 
+**`RAMMPPrototypeState` is one wide message, and that is a known liability.** It
+carries 27 fields — every encoder position and velocity, four loadcells, the IMU
+and the state enum — in a single type. Under the versioning rule above, adding
+one sensor to the base is a MAJOR bump for everything that reads base state,
+including consumers that only wanted the tilt. It came across from `RAMMP-docker`
+unchanged so that the move stayed a move; splitting it into per-subsystem
+messages is the obvious next step and is itself a breaking change, so it should
+happen before this package has consumers rather than after. The loadcell units
+are still unconfirmed, marked `TODO` in the file.
+
 ## Provenance
 
 `rammp_arm_interfaces` was extracted from `rammp-org/kinova-gen3-ros2`, where it
 was `kinova_gen3_interfaces`. The design records for each tier — arbitration,
 streaming, the gripper — live in that repo under `docs/superpowers/specs/`.
+
+`rammp_base_interfaces` was extracted from `rammp-org/RAMMP-docker`, where it was
+`RAMMP-interfaces/rammp_prototype_interfaces` and was vendored into the base
+image by a `COPY`. The definitions moved across unchanged; only the package
+name, its metadata and its dependency list were touched. That repo still carries
+its own copy — see `docs/rammp-docker-followup.md` for what has to change there.
