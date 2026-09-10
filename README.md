@@ -5,7 +5,27 @@ packages — a consumer depends on the surface it uses, not on all of them.
 
 | package | what it covers |
 | --- | --- |
-| `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, arbitration, setpoint streaming, the gripper |
+| `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
+| `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
+
+### Where the line between them is
+
+A type belongs in `rammp_common_interfaces` when its contract is complete
+**without knowing what is being controlled**. E-stop qualifies: it is a broadcast
+about the whole robot. Arbitration qualifies: a token, an owner and a generation
+mean the same thing whether the resource is an arm or a base, so the arm and the
+base run separate arbitration servers speaking one protocol — and an operator
+override tool needs one client, not one per subsystem.
+
+Most of the arm's types would *also* survive that test read literally — a service
+of strings and a token has nothing arm-shaped in its fields. That is why the test
+is about the contract and not the field list. `OpenStream` is the case worth
+naming: it looks generic, but it hands back `channels` that you must then publish
+arm-shaped setpoints onto, so it is only meaningful alongside a setpoint
+vocabulary. Trajectory following is the same — it is tuned to arm control modes.
+Both stay in `rammp_arm_interfaces` until a second subsystem exists to show what,
+if anything, they genuinely share. Guessing at that shape before there is a
+consumer is how you ship a contract you cannot honour.
 
 ## Everything shared lives here
 

@@ -1,0 +1,10 @@
+# Acquire control of a resource. SEIZES: if another owner holds it this succeeds
+# anyway, halting their in-flight motion and settling their outstanding goals rather
+# than leaving them hanging. By operational contract this is called by the task
+# orchestrator and nothing else.
+string owner_id      # human-readable label; mirrors the sender_id on arbitrated goals
+---
+bool      accepted
+uint8[16] token      # the capability; put it on every command this resource arbitrates
+uint64    generation
+string    message
