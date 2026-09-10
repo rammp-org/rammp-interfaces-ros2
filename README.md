@@ -27,44 +27,72 @@ Both stay in `rammp_arm_interfaces` until a second subsystem exists to show what
 if anything, they genuinely share. Guessing at that shape before there is a
 consumer is how you ship a contract you cannot honour.
 
-## Why these live outside the driver
+## Everything shared lives here
 
-An interface is a contract between two parties, so it should not live inside
-either one. When the arm's messages lived in the arm driver, every consumer took
-a build dependency on the driver to speak to it, and the contract's version was
-whatever the driver happened to be.
+Every interface shared between RAMMP modules belongs here, whichever subsystem
+it describes. Install this one repo and you have every message needed to talk to
+anything else on the robot — no hunting for which repo owns which type, and no
+second pin to keep in step.
 
-The cost is real and worth naming: the messages and the code implementing them
-now move in separate repositories, so a change to both is two PRs. That is the
-price of one contract that many modules can share.
+Carrying messages you never publish costs next to nothing. These packages depend
+on nothing but `builtin_interfaces` and the standard message packages, so there
+is no transitive dependency to inherit and nothing to conflict with; the price of
+the messages you do not use is some generated headers and a library you never
+link.
+
+An interface is also a contract between two parties, so it should not live
+inside either one. A package that ships the messages it implements forces every
+consumer to depend on that implementation in order to speak to it, and makes the
+contract's version whatever the implementation's happens to be.
 
 ## Versioning
 
-Semantic versioning, with one rule that is stricter than you would expect.
+Semantic versioning. Which bump a field change earns depends on **where the
+field goes**, not just that one was added.
 
 | change | bump |
 | --- | --- |
 | new message, service or action | **minor** |
+| new field **appended at the end** with a default value | **minor** |
 | comments, docs, whitespace | **patch** |
-| **any change to an existing type** — field added, removed, renamed, retyped | **MAJOR** |
+| a field added **anywhere but the end**, or appended without a default | **MAJOR** |
+| a field removed, renamed or retyped | **MAJOR** |
 
-### Why adding a field is a major bump
+**These rules hold only under Cyclone DDS**, which is what the RAMMP base image
+runs. On another RMW the appended-field minor bump is not safe.
 
-On ROS 2 Humble, a subscriber matches a publisher on the **type name**. It does
-not check the type's content.
+### Appending is safe, inserting is not
 
-Type hashes (`RIHS01_…`) arrived in Iron; Humble has no `type_hash.h` and no
-`RIHS` symbols in `librmw`. So a node built against a 4-field message and one
-built against the same message with 5 fields **will connect to each other**, and
-the second will deserialise the first's bytes as though the extra field were
-there. No error. No refused connection. Just wrong numbers, arriving at a robot.
+On Humble a subscriber matches a publisher on the **type name** and nothing
+else. Type hashes (`RIHS01_…`) arrived in Iron; Humble has no `type_hash.h` and
+no `RIHS` symbols in `librmw`. Two builds of the same type name connect even
+when their fields differ.
 
-That is worse than a build failure, and it is why "we only added a field" is not
-a safe change here. Add fields by adding a **new message**, which is a minor
-bump and cannot be misread, or accept the major.
+Appending is safe because the deserialiser stops at the end of the payload and
+leaves the trailing field as constructed — the declared default when there is
+one, zero when there is not. That is why the default is what makes an appended
+field a minor bump: without one the field silently reads `0`, which a consumer
+cannot tell apart from a zero the publisher meant to send.
 
-Revisit this the moment RAMMP moves past Humble — on Iron and later the runtime
-can tell, and this rule can relax.
+Inserting is not safe, and a default does not change that. Every field after the
+insertion point reads the previous field's bytes, and the last one falls off the
+end of the payload. No error, no refused connection, just wrong numbers reaching
+the robot.
+
+### Cyclone matches on type name; Fast-DDS does not
+
+The table above describes Cyclone DDS, which is what the RAMMP base image runs.
+Under Fast-DDS a subscriber whose definition differs from the publisher's does
+not match at all, so the topic carries nothing rather than carrying wrong
+values.
+
+The appended-field minor bump therefore holds only while every module on the
+robot runs Cyclone. Point one module at a different RMW and a change this policy
+calls minor becomes a topic that silently never delivers. A mid-struct insertion
+is a major bump under either.
+
+Revisit all of this the moment RAMMP moves past Humble — on Iron and later the
+runtime can tell, and these rules can relax.
 
 ### Release order
 
@@ -85,45 +113,5 @@ rammp-interfaces-ros2:
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules
-run together" reduces to **do they all speak the same major?** That is a
-question you can answer by reading pins, without running anything.
-
-## Design notes
-
-**Joint arrays are fixed at `float64[7]`.** `JointSetpoint.values`,
-`JointImpedanceGains.kq` / `torque_limit`, and `GoToJointConfig.target_joints`
-are sized, not unbounded. That matches the driver's fixed-size `JointVec`, and a
-wrong-length message becomes impossible rather than a runtime check every
-consumer has to remember. The cost is that a non-7-DOF arm needs new types —
-deliberate, because `float64[7]` → `float64[]` would be a breaking change made
-under pressure later.
-
-**Some fields are deliberately absent.** They are documented in the `.msg` files
-themselves, and the reasoning matters more than the omission:
-
-- `GripperSetpoint` has no `active` flag. The driver's internal struct has one,
-  but it is a wire-level gate on the outgoing frame, not a client control —
-  setting it false does not stop the gripper being commanded. A field that reads
-  as its own opposite is worse than no field.
-- `EeState` has no wrench. The driver has no force estimate of its own, and the
-  arm's own reading is in a frame the model does not know about. Publishing a
-  frame-mismatched value would be worse than publishing nothing.
-- Gripper `velocity` does not exist. It was measured to be the commanded speed
-  echoed back rather than a measurement.
-
-**No `WrenchSetpoint` in v1.0.0.** No controller consumes a wrench, so shipping
-the topic would promise something the contract cannot honour. It can arrive as a
-minor bump when a controller exists.
-
-## Provenance
-
-Both packages were extracted from `rammp-org/kinova-gen3-ros2`, where they were a
-single `kinova_gen3_interfaces`. The design records for each tier — arbitration,
-streaming, the gripper — live in that repo under `docs/superpowers/specs/`.
-
-E-stop and arbitration were split out into `rammp_common_interfaces` before anyone
-had built against v1.0.0. Both had been sitting in the arm package for no better
-reason than that the arm was the first subsystem to need them, and neither is
-about the arm. Getting that boundary wrong is cheap to fix while the tag has no
-consumers and expensive afterwards, since moving a type between packages breaks
-both of them.
+run together" reduces to **do they all speak the same major?** — answerable by
+reading pins, without running anything.
