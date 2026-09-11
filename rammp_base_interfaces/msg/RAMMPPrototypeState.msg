@@ -17,55 +17,6 @@ uint8 STATE_UNCALIBRATED = 8
 
 uint8 state
 
-# Position data from encoders
-# FC - Front Caster
-# RC - Rear Caster
-# MR - Main Right
-# ML - Main Left
-
-
-# Vertical translation of the casters and main wheels
-# Unit: Meters
-float32 fc_pos
-float32 rc_pos
-float32 mr_pos
-float32 ml_pos
-
-# Forward/Backward translation of the casters and main wheels
-# Unit: meters
-float32 ml_carriage_pos
-float32 mr_carriage_pos
-
-# Wheel positions, in distance traveled by the wheel.
-# Unit: Meters
-float32 ml_wheel_pos
-float32 mr_wheel_pos
-
-# Velocities
-float32 fc_vel
-float32 rc_vel
-float32 mr_vel
-float32 ml_vel
-float32 ml_carriage_vel
-float32 mr_carriage_vel
-float32 ml_wheel_vel
-float32 mr_wheel_vel
-
-
-#Loadcells
-# Unit: TODO - confirm units
-float32 rc_loadcell
-float32 fc_loadcell
-float32 mr_loadcell
-float32 ml_loadcell
-
-
-
 #IMU
-geometry_msgs/Quaternion orientation
-geometry_msgs/Vector3 linear_acceleration
-geometry_msgs/Vector3 angular_velocity
 float64 tilt
 
-#other
-float64 app_time
