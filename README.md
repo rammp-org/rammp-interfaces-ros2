@@ -5,9 +5,9 @@ packages — a consumer depends on the surface it uses, not on all of them.
 
 | package | what it covers |
 | --- | --- |
-| `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
+| `rammp_common_interfaces` | what no single subsystem owns: emergency stop, the arbitration protocol for taking control of a resource, and the joystick's broadcast input |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
-| `rammp_base_interfaces` | commanding and observing the mobile base: chassis state, seat commands, calibration, curb traversal |
+| `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
 
 ### Where the line between them is
 
@@ -144,15 +144,10 @@ themselves, and the reasoning matters more than the omission:
 the topic would promise something the contract cannot honour. It can arrive as a
 minor bump when a controller exists.
 
-**`RAMMPPrototypeState` is one wide message, and that is a known liability.** It
-carries 27 fields — every encoder position and velocity, four loadcells, the IMU
-and the state enum — in a single type. Under the versioning rule above, adding
-one sensor to the base is a MAJOR bump for everything that reads base state,
-including consumers that only wanted the tilt. It came across from `RAMMP-docker`
-unchanged so that the move stayed a move; splitting it into per-subsystem
-messages is the obvious next step and is itself a breaking change, so it should
-happen before this package has consumers rather than after. The loadcell units
-are still unconfirmed, marked `TODO` in the file.
+**Some types are compatible with the robot's RTPS messages.** The embedded
+boards publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
+corresponding types here are kept in step with `rammp-org/rammp-rtps` so a ROS
+node reads the boards' own packets with no bridge in between.
 
 ## Provenance
 
