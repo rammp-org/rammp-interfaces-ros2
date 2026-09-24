@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rammp_common_interfaces</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The RAMMP contracts that are not specific to any one subsystem: emergency stop, and the arbitration protocol that decides who may command a resource. Depended on by every module that stops the robot or takes control of part of it.</description>
   <maintainer email="swapnil.pande98@gmail.com">Swapnil Pande</maintainer>
   <license>Proprietary</license>
