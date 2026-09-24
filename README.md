@@ -117,46 +117,9 @@ A colcon workspace holds exactly one version of a package, so "can these modules
 run together" reduces to **do they all speak the same major?** — answerable by
 reading pins, without running anything.
 
-## Design notes
+## RTPS compatibility
 
-**Joint arrays are fixed at `float64[7]`.** `JointSetpoint.values`,
-`JointImpedanceGains.kq` / `torque_limit`, and `GoToJointConfig.target_joints`
-are sized, not unbounded. That matches the driver's fixed-size `JointVec`, and a
-wrong-length message becomes impossible rather than a runtime check every
-consumer has to remember. The cost is that a non-7-DOF arm needs new types —
-deliberate, because `float64[7]` → `float64[]` would be a breaking change made
-under pressure later.
-
-**Some fields are deliberately absent.** They are documented in the `.msg` files
-themselves, and the reasoning matters more than the omission:
-
-- `GripperSetpoint` has no `active` flag. The driver's internal struct has one,
-  but it is a wire-level gate on the outgoing frame, not a client control —
-  setting it false does not stop the gripper being commanded. A field that reads
-  as its own opposite is worse than no field.
-- `EeState` has no wrench. The driver has no force estimate of its own, and the
-  arm's own reading is in a frame the model does not know about. Publishing a
-  frame-mismatched value would be worse than publishing nothing.
-- Gripper `velocity` does not exist. It was measured to be the commanded speed
-  echoed back rather than a measurement.
-
-**No `WrenchSetpoint` in v1.0.0.** No controller consumes a wrench, so shipping
-the topic would promise something the contract cannot honour. It can arrive as a
-minor bump when a controller exists.
-
-**Some types are compatible with the robot's RTPS messages.** The embedded
-boards publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
+Some types are compatible with the robot's RTPS messages. The embedded boards
+publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
 corresponding types here are kept in step with `rammp-org/rammp-rtps` so a ROS
 node reads the boards' own packets with no bridge in between.
-
-## Provenance
-
-`rammp_arm_interfaces` was extracted from `rammp-org/kinova-gen3-ros2`, where it
-was `kinova_gen3_interfaces`. The design records for each tier — arbitration,
-streaming, the gripper — live in that repo under `docs/superpowers/specs/`.
-
-`rammp_base_interfaces` was extracted from `rammp-org/RAMMP-docker`, where it was
-`RAMMP-interfaces/rammp_prototype_interfaces` and was vendored into the base
-image by a `COPY`. The definitions moved across unchanged; only the package
-name, its metadata and its dependency list were touched. That repo still carries
-its own copy — see `docs/rammp-docker-followup.md` for what has to change there.
