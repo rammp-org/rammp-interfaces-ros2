@@ -7,6 +7,7 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/EStop.msg"
   "msg/ControlStatus.msg"
+  "msg/XYTwist.msg"
   "srv/AcquireControl.srv"
   "srv/ReleaseControl.srv"
   "srv/RevokeControl.srv"
