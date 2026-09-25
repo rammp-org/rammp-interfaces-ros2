@@ -3,7 +3,7 @@
   <name>rammp_base_interfaces</name>
   <version>1.1.0</version>
   <description>The RAMMP base interface: observing the mobile base — the MIB's status and seat state. The contract, versioned independently of any driver that implements it.</description>
-  <maintainer email="swapnil.pande98@gmail.com">Swapnil Pande</maintainer>
+  <maintainer email="eileen.wang@pitt.edu">Eileen Wang</maintainer>
   <license>Proprietary</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
