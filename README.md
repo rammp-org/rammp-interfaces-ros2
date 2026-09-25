@@ -5,7 +5,8 @@ packages — a consumer depends on the surface it uses, not on all of them.
 
 | package | what it covers |
 | --- | --- |
-| `rammp_common_interfaces` | what no single subsystem owns: emergency stop, the arbitration protocol for taking control of a resource, and the joystick's broadcast input |
+| `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
+| `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
 | `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
 

@@ -1,7 +1,7 @@
 # The joystick's stick, broadcast to the whole robot. An input stream, not a
 # command to any one resource: each consumer (the base, arm teleop, ...)
-# decides what the stick means for it -- which is why it lives in the common
-# package. Calibrated on the joystick: 0 at rest, deadzones applied, X/Y
+# decides what the stick means for it.
+# Calibrated on the joystick: 0 at rest, deadzones applied, X/Y
 # within the unit circle. Twist always rotates in place. Sent best-effort and
 # resent periodically; subscribe best_effort.
 
