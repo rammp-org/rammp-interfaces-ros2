@@ -5,6 +5,9 @@
 # within the unit circle. Twist always rotates in place. Sent best-effort and
 # resent periodically; subscribe best_effort.
 
+# This message definition mirrors the corresponding rammp_rtps message and is 
+# not meant to be taken as a source of truth.
+
 # a bit set
 uint32 BUTTONS_NONE = 0
 uint32 BUTTONS_JOYSTICK = 1   # the stick's button
