@@ -6,7 +6,9 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | package | what it covers |
 | --- | --- |
 | `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
+| `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
+| `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
 
 ### Where the line between them is
 
@@ -115,3 +117,10 @@ rammp-interfaces-ros2:
 A colcon workspace holds exactly one version of a package, so "can these modules
 run together" reduces to **do they all speak the same major?** — answerable by
 reading pins, without running anything.
+
+## RTPS compatibility
+
+Some types are compatible with the robot's RTPS messages. The embedded boards
+publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
+corresponding types here are kept in step with `rammp-org/rammp-rtps` so a ROS
+node reads the boards' own packets with no bridge in between.

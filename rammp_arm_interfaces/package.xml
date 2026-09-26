@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rammp_arm_interfaces</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The RAMMP arm interface: every message, service and action needed to command and observe a RAMMP arm. The contract, versioned independently of any driver that implements it.</description>
   <maintainer email="swapnil.pande98@gmail.com">Swapnil Pande</maintainer>
   <license>Proprietary</license>
