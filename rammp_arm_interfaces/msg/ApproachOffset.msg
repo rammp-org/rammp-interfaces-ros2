@@ -1,12 +1,20 @@
 # Approach the goal along one tool axis, through a blended intermediate target.
 #
-# IMPORTANT: an approach is not independent of locking. The planner holds the
-# OTHER FIVE pose components at the goal's values while travelling along the
-# freed axis, so requesting an approach also requests those five locks — and
-# therefore requires the start to already match the goal on them.
+# IMPORTANT: an approach holds the OTHER FIVE pose components at the goal's
+# values while travelling along the freed axis — but only from `at_fraction`
+# onward, NOT from the start. So unlike a lock, an approach does NOT require the
+# start pose to match the goal; it constrains the end of the motion only.
+# (Measured on the arm: a lock on a travelled axis is refused with
+# INVALID_PARTIAL_POSE_COST_METRIC, while the same goal carrying an approach
+# plans normally.)
 #
-# The frame `distance` and `axis` are measured in is `axis_lock.reference_frame`
-# (see ToolAxisLock.msg), even when no axis is locked.
+# THE FRAME IS NOT YOURS TO CHOOSE. `axis` is resolved in the GOAL (tool) frame,
+# always, and `axis_lock.reference_frame` has NO effect on it. The planner builds
+# this through cuRobo's create_grasp_approach_metric, which accepts a
+# project_to_goal_frame argument and then ignores it, falling back to
+# PoseCostConfig's projected-distance default. So AXIS_Z is the tool's own
+# approach direction — for a forward-facing gripper that is horizontal, not
+# "from above".
 #
 # It is also a preference, not a waypoint: the path passes NEAR the offset
 # without stopping there and without hitting it exactly.
