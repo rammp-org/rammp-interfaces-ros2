@@ -2,6 +2,14 @@
 geometry_msgs/PoseStamped target   # frame_id MUST be base_link (rejected otherwise)
 string sender_id                   # arbitration hook, mirrors ExecuteJointTrajectory
 uint8[16] token                    # arbitration capability from /acquire_control
+# Execute this move slower: (0, 1], 1.0 = as planned.
+# Out of range is refused, not clamped.
+float64 speed_scale 1.0
+# Hold tool-pose components fixed for the whole trajectory; all-false = free.
+ToolAxisLock axis_lock
+# Approach the goal along one tool axis. NOTE: an approach also holds the other
+# five pose components — see ApproachOffset.msg. distance 0.0 = no approach.
+ApproachOffset approach_offset
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,

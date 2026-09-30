@@ -96,6 +96,16 @@ is a major bump under either.
 Revisit all of this the moment RAMMP moves past Humble — on Iron and later the
 runtime can tell, and these rules can relax.
 
+### Version history
+
+- **1.2.0** (`rammp_arm_interfaces`), 2026-09-30: new messages `ToolAxisLock`
+  and `ApproachOffset`; new goal fields `speed_scale` (all four actions) and
+  `axis_lock` + `approach_offset` (`GoToEEPose`). Minor because all three fields
+  are appended at the end of the goal with defaults, so an older client is
+  unaffected under Cyclone DDS (see the policy above).
+  `GoToJointConfig` and `GoToPreset` get `speed_scale` only, deliberately: they
+  plan in joint space, where a tool-pose lock has no meaning.
+
 ### Release order
 
 These packages depend on nothing, so they always release first. Tag here, then

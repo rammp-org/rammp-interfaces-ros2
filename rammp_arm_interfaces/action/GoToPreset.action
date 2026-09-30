@@ -3,6 +3,11 @@
 string preset_name         # must resolve in the registry (rejected otherwise)
 string sender_id           # arbitration hook, mirrors ExecuteJointTrajectory
 uint8[16] token                    # arbitration capability from /acquire_control
+# Execute this move slower: (0, 1], 1.0 = as planned.
+# Out of range is refused, not clamped.
+float64 speed_scale 1.0
+# No axis_lock / approach_offset here on purpose: planning is in joint space,
+# where a tool-pose lock has no meaning.
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,
