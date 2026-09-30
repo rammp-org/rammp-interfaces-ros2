@@ -2,8 +2,11 @@
 geometry_msgs/PoseStamped target   # frame_id MUST be base_link (rejected otherwise)
 string sender_id                   # arbitration hook, mirrors ExecuteJointTrajectory
 uint8[16] token                    # arbitration capability from /acquire_control
-# Execute this move slower: (0, 1], 1.0 = as planned.
-# Out of range is refused, not clamped.
+# Execute this move slower: 1.0 = as planned. Out of range is refused, not
+# clamped -- a value below the floor would otherwise be silently sped up to it.
+# The lower bound is the executing driver's minimum scale, currently 0.01; zero
+# is not permitted because it would stop the trajectory clock and the goal
+# would never complete.
 float64 speed_scale 1.0
 # Hold tool-pose components fixed for the whole trajectory; all-false = free.
 ToolAxisLock axis_lock
