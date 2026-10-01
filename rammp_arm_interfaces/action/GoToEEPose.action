@@ -8,11 +8,11 @@ uint8[16] token                    # arbitration capability from /acquire_contro
 # is not permitted because it would stop the trajectory clock and the goal
 # would never complete.
 float64 speed_scale 1.0
-# Hold tool-pose components fixed for the whole trajectory; all-false = free.
-ToolAxisLock axis_lock
-# Approach the goal along one tool axis. NOTE: an approach also holds the other
-# five pose components — see ApproachOffset.msg. distance 0.0 = no approach.
-ApproachOffset approach_offset
+# Keep the tool's orientation while it travels; HOLD_NONE (the default) lets
+# the planner reorient freely. See OrientationHold.msg -- in particular that
+# LEVEL preserves the tilt you are already at rather than levelling you, and
+# that a goal orientation disagreeing with the current one is refused.
+OrientationHold orientation_hold
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,

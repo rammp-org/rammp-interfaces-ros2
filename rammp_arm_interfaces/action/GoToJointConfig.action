@@ -8,8 +8,8 @@ uint8[16] token                    # arbitration capability from /acquire_contro
 # is not permitted because it would stop the trajectory clock and the goal
 # would never complete.
 float64 speed_scale 1.0
-# No axis_lock / approach_offset here on purpose: planning is in joint space,
-# where a tool-pose lock has no meaning.
+# No orientation_hold here on purpose: planning is in joint space,
+# where holding a tool orientation has no meaning.
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,

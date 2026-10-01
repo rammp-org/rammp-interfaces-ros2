@@ -98,13 +98,21 @@ runtime can tell, and these rules can relax.
 
 ### Version history
 
-- **1.2.0** (`rammp_arm_interfaces`), 2026-09-30: new messages `ToolAxisLock`
-  and `ApproachOffset`; new goal fields `speed_scale` (all four actions) and
-  `axis_lock` + `approach_offset` (`GoToEEPose`). Minor because all three fields
-  are appended at the end of the goal with defaults, so an older client is
-  unaffected under Cyclone DDS (see the policy above).
-  `GoToJointConfig` and `GoToPreset` get `speed_scale` only, deliberately: they
-  plan in joint space, where a tool-pose lock has no meaning.
+- **1.2.0** (`rammp_arm_interfaces`), 2026-09-30: new message `OrientationHold`;
+  new goal fields `speed_scale` (all four actions) and `orientation_hold`
+  (`GoToEEPose`). Minor because both are appended at the end of the goal with
+  defaults, so an older client is unaffected under Cyclone DDS (see the policy
+  above). `GoToJointConfig` and `GoToPreset` get `speed_scale` only,
+  deliberately: they plan in joint space, where holding a tool orientation has
+  no meaning.
+
+  Superseded before release, never published: an earlier cut of this version
+  carried `ToolAxisLock` (six per-axis booleans plus a reference frame) and
+  `ApproachOffset`. Per-axis holds turned out to express a mechanism rather than
+  a request, position holds could only ever mean "travel along one base axis",
+  and the frame field could be set and silently disregarded. `ApproachOffset` is
+  shelved with its behaviour unexplained — see kinova-gen3-ros2#40. Both are
+  removed rather than deprecated because nothing has shipped against them.
 
 ### Release order
 
