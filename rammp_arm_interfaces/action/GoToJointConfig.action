@@ -2,6 +2,14 @@
 float64[7] target_joints   # rad, joint_1..joint_7
 string     sender_id       # arbitration hook, mirrors ExecuteJointTrajectory
 uint8[16] token                    # arbitration capability from /acquire_control
+# Execute this move slower: 1.0 = as planned. Out of range is refused, not
+# clamped -- a value below the floor would otherwise be silently sped up to it.
+# The lower bound is the executing driver's minimum scale, currently 0.01; zero
+# is not permitted because it would stop the trajectory clock and the goal
+# would never complete.
+float64 speed_scale 1.0
+# No orientation_hold here on purpose: planning is in joint space,
+# where holding a tool orientation has no meaning.
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,

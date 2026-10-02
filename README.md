@@ -6,7 +6,9 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | package | what it covers |
 | --- | --- |
 | `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
+| `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
+| `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
 
 ### Where the line between them is
 
@@ -94,6 +96,22 @@ is a major bump under either.
 Revisit all of this the moment RAMMP moves past Humble — on Iron and later the
 runtime can tell, and these rules can relax.
 
+### Version history
+
+Every package carries the repo's one version.
+
+- **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
+  `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
+  `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a
+  `uint8` with `HOLD_NONE`/`HOLD_LEVEL`/`HOLD_FIXED` constants on the goal).
+  Minor because the fields are appended at the end of the goal with defaults
+  that mean today's behaviour, so an older client is unaffected under Cyclone
+  DDS (see the policy above). `GoToJointConfig` and `GoToPreset` get
+  `speed_scale` only, deliberately: they plan in joint space, where holding a
+  tool orientation has no meaning. (An in-tree 1.1.0 of 2026-09-24 carried the
+  two new packages but was never tagged; this release subsumes it.)
+- **1.0.0**, 2026-09-10: first tag.
+
 ### Release order
 
 These packages depend on nothing, so they always release first. Tag here, then
@@ -109,9 +127,16 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v1.0.0
+  version: v1.1.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules
 run together" reduces to **do they all speak the same major?** — answerable by
 reading pins, without running anything.
+
+## RTPS compatibility
+
+Some types are compatible with the robot's RTPS messages. The embedded boards
+publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
+corresponding types here are kept in step with `rammp-org/rammp-rtps` so a ROS
+node reads the boards' own packets with no bridge in between.
