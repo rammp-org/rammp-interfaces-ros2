@@ -98,9 +98,10 @@ runtime can tell, and these rules can relax.
 
 ### Version history
 
-- **1.2.0** (`rammp_arm_interfaces`), 2026-09-30: new message `OrientationHold`;
-  new goal fields `speed_scale` (all four actions) and `orientation_hold`
-  (`GoToEEPose`). Minor because both are appended at the end of the goal with
+- **1.2.0** (`rammp_arm_interfaces`), 2026-09-30: new goal fields
+  `speed_scale` (all four actions) and `orientation_hold` (`GoToEEPose`, a
+  `uint8` with `HOLD_NONE`/`HOLD_LEVEL`/`HOLD_FIXED` constants on the goal).
+  Minor because both are appended at the end of the goal with
   defaults, so an older client is unaffected under Cyclone DDS (see the policy
   above). `GoToJointConfig` and `GoToPreset` get `speed_scale` only,
   deliberately: they plan in joint space, where holding a tool orientation has
@@ -113,6 +114,8 @@ runtime can tell, and these rules can relax.
   and the frame field could be set and silently disregarded. `ApproachOffset` is
   shelved with its behaviour unexplained — see kinova-gen3-ros2#40. Both are
   removed rather than deprecated because nothing has shipped against them.
+  A one-field `OrientationHold` message that briefly replaced them was inlined
+  into the goal for the same reason: it had one user.
 
 ### Release order
 
