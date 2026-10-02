@@ -98,24 +98,19 @@ runtime can tell, and these rules can relax.
 
 ### Version history
 
-- **1.2.0** (`rammp_arm_interfaces`), 2026-09-30: new goal fields
-  `speed_scale` (all four actions) and `orientation_hold` (`GoToEEPose`, a
-  `uint8` with `HOLD_NONE`/`HOLD_LEVEL`/`HOLD_FIXED` constants on the goal).
-  Minor because both are appended at the end of the goal with
-  defaults, so an older client is unaffected under Cyclone DDS (see the policy
+Every package carries the repo's one version.
+
+- **1.2.0**, 2026-09-30: new goal fields `speed_scale` (all four arm actions)
+  and `orientation_hold` (`GoToEEPose`, a `uint8` with
+  `HOLD_NONE`/`HOLD_LEVEL`/`HOLD_FIXED` constants on the goal). Minor because
+  both are appended at the end of the goal with defaults that mean today's
+  behaviour, so an older client is unaffected under Cyclone DDS (see the policy
   above). `GoToJointConfig` and `GoToPreset` get `speed_scale` only,
   deliberately: they plan in joint space, where holding a tool orientation has
   no meaning.
-
-  Superseded before release, never published: an earlier cut of this version
-  carried `ToolAxisLock` (six per-axis booleans plus a reference frame) and
-  `ApproachOffset`. Per-axis holds turned out to express a mechanism rather than
-  a request, position holds could only ever mean "travel along one base axis",
-  and the frame field could be set and silently disregarded. `ApproachOffset` is
-  shelved with its behaviour unexplained — see kinova-gen3-ros2#40. Both are
-  removed rather than deprecated because nothing has shipped against them.
-  A one-field `OrientationHold` message that briefly replaced them was inlined
-  into the goal for the same reason: it had one user.
+- **1.1.0**, 2026-09-24, never tagged: new packages `rammp_base_interfaces`
+  (`MibState`, `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`).
+- **1.0.0**, 2026-09-10: first tag.
 
 ### Release order
 
@@ -132,7 +127,7 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v1.0.0
+  version: v1.2.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules
