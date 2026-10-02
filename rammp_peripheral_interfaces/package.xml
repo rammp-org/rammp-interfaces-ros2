@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rammp_peripheral_interfaces</name>
-  <version>1.2.0</version>
+  <version>1.1.0</version>
   <description>Interfaces for RAMMP peripherals: optional devices that can be added, removed or replaced, broadcasting their input for any part of the system to consume — the joystick today, more to come. The contract, versioned independently of any device that implements it.</description>
   <maintainer email="eileen.wang@pitt.edu">Eileen Wang</maintainer>
   <license>Proprietary</license>
