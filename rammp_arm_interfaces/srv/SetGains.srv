@@ -1,0 +1,10 @@
+# Set the SESSION DEFAULT compliance -- what PROFILE_SESSION_DEFAULT resolves
+# to from now on. Touches no live mode: a running impedance session keeps the
+# tuning it opened with; the next bare impedance command picks the new default
+# up. `spec` must name a profile or carry custom gains --
+# PROFILE_SESSION_DEFAULT is refused (the default cannot point at itself).
+GainsSpec spec
+uint8[16] token      # arbitration capability from /acquire_control; zeros = none
+---
+bool   accepted
+string message       # why not, when accepted is false

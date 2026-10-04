@@ -14,6 +14,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToJointConfig.action"
   "action/GoToPreset.action"
   "msg/JointImpedanceGains.msg"
+  "msg/GainsSpec.msg"
   "msg/JointSetpoint.msg"
   "msg/PoseSetpoint.msg"
   "msg/TwistSetpoint.msg"
@@ -23,6 +24,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/OpenStream.srv"
   "srv/CloseStream.srv"
   "srv/ListControllers.srv"
+  "srv/SetGains.srv"
   "msg/GripperSetpoint.msg"
   "msg/GripperState.msg"
   DEPENDENCIES builtin_interfaces std_msgs trajectory_msgs control_msgs action_msgs geometry_msgs)

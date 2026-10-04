@@ -7,6 +7,10 @@
 string    controller
 float64   timeout_s     # MUST be > 0; an unbounded stream has no safe-stop
 uint8[16] token
+# Compliance for an impedance session, resolved and applied AT OPEN. A
+# non-default spec on a non-impedance controller is refused. Mid-session gain
+# changes are deliberately out of scope: close and re-open.
+GainsSpec gains
 ---
 bool     accepted
 string[] channels       # where to publish -- the driver tells you

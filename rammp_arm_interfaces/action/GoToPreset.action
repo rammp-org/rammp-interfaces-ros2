@@ -11,6 +11,15 @@ uint8[16] token                    # arbitration capability from /acquire_contro
 float64 speed_scale 1.0
 # No orientation_hold here on purpose: planning is in joint space,
 # where holding a tool orientation has no meaning.
+# How the planned trajectory is EXECUTED. Planning is unchanged -- cuRobo plans
+# collision-free exactly as before; IMPEDANCE executes the plan compliantly.
+uint8 CONTROL_MODE_POSITION=0
+uint8 CONTROL_MODE_IMPEDANCE=1
+uint8 control_mode 0
+# Compliance iff IMPEDANCE; the default (PROFILE_SESSION_DEFAULT) means "run
+# under the session default". A non-default spec on a POSITION goal is refused,
+# not ignored.
+GainsSpec gains
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,
