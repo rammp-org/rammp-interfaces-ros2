@@ -100,13 +100,13 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
-- **Unreleased** (`feat/compliant-everything`): new `GainsSpec` message (a
+- **Unreleased** (`feat/compliant-everything`): new `ImpedanceGains` message (a
   named compliance profile — session default / soft / medium / stiff — or
   custom gains) and token-gated `SetGains` service (re-points the session
   default). `ExecuteJointTrajectory`'s goal RETYPES `gains` from
-  `JointImpedanceGains` to `GainsSpec` in place — a **MAJOR** change under the
+  `JointGainValues` to `ImpedanceGains` in place — a **MAJOR** change under the
   policy above. The three `GoTo*` goals and `OpenStream`'s request append
-  `control_mode` (`GoTo*` only) and `GainsSpec gains`, with defaults that mean
+  `control_mode` (`GoTo*` only) and `ImpedanceGains gains`, with defaults that mean
   today's behaviour.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields

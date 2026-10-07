@@ -18,7 +18,7 @@ uint8 control_mode 0
 # Compliance iff IMPEDANCE; the default (PROFILE_SESSION_DEFAULT) means "run
 # under the session default". A non-default spec on a POSITION goal is refused,
 # not ignored.
-GainsSpec gains
+ImpedanceGains gains
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,

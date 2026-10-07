@@ -1,4 +1,4 @@
-# How a command names its compliance (core's GainsSpec).
+# How a command names its compliance (core's ImpedanceGains).
 #
 # PROFILE_SESSION_DEFAULT -- the default -- means "whatever the session default
 # points at" (initially the MEDIUM profile; /set_gains re-points it). The named
@@ -13,4 +13,4 @@ uint8 PROFILE_MEDIUM=2
 uint8 PROFILE_STIFF=3
 uint8 PROFILE_CUSTOM=4
 uint8 profile 0
-JointImpedanceGains custom
+JointGainValues custom
