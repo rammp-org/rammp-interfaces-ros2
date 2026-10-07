@@ -13,7 +13,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToEEPose.action"
   "action/GoToJointConfig.action"
   "action/GoToPreset.action"
-  "msg/JointGainValues.msg"
+  "msg/JointImpedanceGainValues.msg"
   "msg/ImpedanceGains.msg"
   "msg/JointSetpoint.msg"
   "msg/PoseSetpoint.msg"

@@ -104,7 +104,7 @@ Every package carries the repo's one version.
   named compliance profile — session default / soft / medium / stiff — or
   custom gains) and token-gated `SetGains` service (re-points the session
   default). `ExecuteJointTrajectory`'s goal RETYPES `gains` from
-  `JointGainValues` to `ImpedanceGains` in place — a **MAJOR** change under the
+  `JointImpedanceGainValues` to `ImpedanceGains` in place — a **MAJOR** change under the
   policy above. The three `GoTo*` goals and `OpenStream`'s request append
   `control_mode` (`GoTo*` only) and `ImpedanceGains gains`, with defaults that mean
   today's behaviour.

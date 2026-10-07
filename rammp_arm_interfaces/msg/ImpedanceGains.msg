@@ -13,4 +13,4 @@ uint8 PROFILE_MEDIUM=2
 uint8 PROFILE_STIFF=3
 uint8 PROFILE_CUSTOM=4
 uint8 profile 0
-JointGainValues custom
+JointImpedanceGainValues custom
