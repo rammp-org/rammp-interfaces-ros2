@@ -108,6 +108,7 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+<<<<<<< HEAD
 - **1.2.0**, 2026-10-09: new package `rammp_orchestrator_interfaces` — the
   Orchestrator/engine contract (`CapabilityManifest`, `ActionSpec`,
   `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectDetections`,
@@ -115,6 +116,16 @@ Every package carries the repo's one version.
   `GetDetectedObjects`, `GetWorldState`, `Hibernate`, `RegisterEngine`,
   `RequestIntent`, `SelectObject`, `UpdateObjectState`, `WriteWorldState`;
   `ExecuteAction`). Minor: new package, no changes to any existing type.
+=======
+- **Unreleased** (`feat/compliant-everything`): new `ImpedanceGains` message (a
+  named compliance profile — session default / soft / medium / stiff — or
+  custom gains) and token-gated `SetGains` service (re-points the session
+  default). `ExecuteJointTrajectory`'s goal RETYPES `gains` from
+  `JointImpedanceGainValues` to `ImpedanceGains` in place — a **MAJOR** change under the
+  policy above. The three `GoTo*` goals and `OpenStream`'s request append
+  `control_mode` (`GoTo*` only) and `ImpedanceGains gains`, with defaults that mean
+  today's behaviour.
+>>>>>>> dev
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a

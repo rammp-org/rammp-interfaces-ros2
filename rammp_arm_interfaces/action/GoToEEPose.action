@@ -64,6 +64,15 @@ uint8 HOLD_NONE=0     # orientation free — the planner reorients as it likes
 uint8 HOLD_LEVEL=1    # keep the tool's tilt; spin about base Z free in transit
 uint8 HOLD_FIXED=2    # keep the orientation entirely
 uint8 orientation_hold 0
+# How the planned trajectory is EXECUTED. Planning is unchanged -- cuRobo plans
+# collision-free exactly as before; IMPEDANCE executes the plan compliantly.
+uint8 CONTROL_MODE_POSITION=0
+uint8 CONTROL_MODE_IMPEDANCE=1
+uint8 control_mode 0
+# Compliance iff IMPEDANCE; the default (PROFILE_SESSION_DEFAULT) means "run
+# under the session default". A non-default spec on a POSITION goal is refused,
+# not ignored.
+ImpedanceGains gains
 ---
 # Result
 int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,
