@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rammp_orchestrator_interfaces</name>
+  <version>1.2.0</version>
+  <description>The contract between the RAMMP Orchestrator and any engine that plugs into it: capability registration, object selection and activation, action execution with progress/result reporting, intent delegation between engines, and World State read/write. Complete without knowing which subsystem an engine controls, so it lives alongside the other cross-cutting contracts rather than in any one engine's repo.</description>
+  <maintainer email="guo@assistivetech.dev">Liyun Guo</maintainer>
+  <license>Proprietary</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <depend>action_msgs</depend>
+  <depend>builtin_interfaces</depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

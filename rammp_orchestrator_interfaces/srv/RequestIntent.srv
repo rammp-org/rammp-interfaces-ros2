@@ -1,0 +1,14 @@
+# Called by a *remote* engine node, from within its own ExecuteAction
+# action callback, when its local execution needs to delegate to whichever
+# engine currently handles a given Intent type (mirrors the Intent-yield
+# step of the in-process EngineAdapter generator contract, but across a
+# process boundary: the remote engine blocks on this call instead of
+# yielding to a local Python generator). The Orchestrator performs the same
+# resource/handoff bookkeeping as the in-process path
+# (Orchestrator._delegate_intent) and returns the delegate's final Result.
+
+string requesting_engine_id
+string intent_type
+string params_json
+---
+rammp_orchestrator_interfaces/Result result

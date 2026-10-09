@@ -1,0 +1,13 @@
+# UI-driver call: select a perceived object instance, activating whichever
+# engine(s) claim its perception class and asking each for action
+# availability. perception_class mirrors how a perception/UI layer already
+# knows an object's class at selection time (see Orchestrator.select_object()).
+# More than one engine can claim a class (e.g. "microwave" claimed by
+# Articulation, Pick-and-Place, and Microwave Controls), hence the array.
+
+string instance_id
+string perception_class
+---
+bool success
+rammp_orchestrator_interfaces/EngineActivation[] activations
+string message

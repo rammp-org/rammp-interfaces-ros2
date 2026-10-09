@@ -1,0 +1,5 @@
+# No request fields -- returns a JSON snapshot of the World State.
+
+---
+string snapshot_json
+int64 version
