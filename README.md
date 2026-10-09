@@ -9,6 +9,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
 | `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
+| `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 
 ### Where the line between them is
 
@@ -28,6 +29,13 @@ vocabulary. Trajectory following is the same — it is tuned to arm control mode
 Both stay in `rammp_arm_interfaces` until a second subsystem exists to show what,
 if anything, they genuinely share. Guessing at that shape before there is a
 consumer is how you ship a contract you cannot honour.
+
+`rammp_orchestrator_interfaces` also passes the test, by a different route: its
+types (`CapabilityManifest`, `ActionSpec`, `Intent`, `Progress`, `Result`, ...)
+describe how the Orchestrator and an engine talk to each other, and that
+conversation is identical whether the engine behind it drives an arm, a base, or
+a microwave. The contract is complete without knowing what is being controlled —
+it is, in fact, specifically the layer that lets the Orchestrator not know.
 
 ## Everything shared lives here
 
@@ -100,6 +108,13 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **1.2.0**, 2026-10-09: new package `rammp_orchestrator_interfaces` — the
+  Orchestrator/engine contract (`CapabilityManifest`, `ActionSpec`,
+  `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectDetections`,
+  `ObjectRecord`, `Progress`, `Result`; `Activate`, `Control`, `Deselect`,
+  `GetDetectedObjects`, `GetWorldState`, `Hibernate`, `RegisterEngine`,
+  `RequestIntent`, `SelectObject`, `UpdateObjectState`, `WriteWorldState`;
+  `ExecuteAction`). Minor: new package, no changes to any existing type.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a

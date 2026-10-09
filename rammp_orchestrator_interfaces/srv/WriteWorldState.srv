@@ -1,0 +1,13 @@
+# Called by a *remote* engine node, from within its own ExecuteAction
+# action callback, once a scripted action completes, so its
+# ``world_state_writes`` are actually applied to the Orchestrator's single
+# shared World State store rather than being silently dropped (a remote
+# engine process has no direct reference to that store -- it lives in the
+# Orchestrator's process). Mirrors WorldStateStore.write()'s shallow
+# dict-merge-per-top-level-key semantics.
+
+string updates_json
+---
+bool success
+int32 new_version
+string message

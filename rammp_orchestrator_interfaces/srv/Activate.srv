@@ -1,0 +1,11 @@
+# Called by the Orchestrator on a *remote* engine (one that registered via
+# RegisterEngine rather than being an in-process mock) when its perception
+# class is selected. Mirrors the activate() step of the EngineAdapter
+# contract (rammp_orchestrator/mock_engine.py).
+
+string instance_id
+
+# JSON-encoded World State snapshot at selection time.
+string world_state_snapshot_json
+---
+rammp_orchestrator_interfaces/ActionAvailability[] availability
