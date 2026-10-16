@@ -16,4 +16,6 @@ uint16 mask_id           # this object's value in label_image, >= 1; 0 when it h
 
 bool has_pose            # false until the publisher can place the object in 3D (e.g. from aligned depth)
 geometry_msgs/Pose pose  # in the enclosing message's header.frame_id (ObjectDetections or TrackingStatus);
-                         # valid only when has_pose
+                         # valid only when has_pose. With a size: the 3D box's center, its axes the orientation
+geometry_msgs/Vector3 size  # full extent of the 3D box along the pose's x, y, z axes, in meters; all 0 when the
+                            # publisher places the object without a box (a point position only)
