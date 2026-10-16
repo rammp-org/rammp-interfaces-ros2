@@ -10,6 +10,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
 | `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
 | `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
+| `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
 
 ### Where the line between them is
 
@@ -116,13 +117,22 @@ Every package carries the repo's one version.
   policy above. The three `GoTo*` goals and `OpenStream`'s request append
   `control_mode` (`GoTo*` only) and `ImpedanceGains gains`, with defaults that mean
   today's behaviour.
-- **1.2.0**, 2026-10-09: new package `rammp_orchestrator_interfaces` — the
+- **1.2.0**, unreleased: new packages `rammp_orchestrator_interfaces` — the
   Orchestrator/engine contract (`CapabilityManifest`, `ActionSpec`,
-  `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectDetections`,
-  `ObjectRecord`, `Progress`, `Result`; `Activate`, `Control`, `Deselect`,
-  `GetDetectedObjects`, `GetWorldState`, `Hibernate`, `RegisterEngine`,
-  `RequestIntent`, `SelectObject`, `UpdateObjectState`, `WriteWorldState`;
-  `ExecuteAction`). Minor: new package, no changes to any existing type.
+  `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectRecord`, `Progress`,
+  `Result`; `Activate`, `Control`, `Deselect`, `GetDetectedObjects`,
+  `GetWorldState`, `Hibernate`, `RegisterEngine`, `RequestIntent`, `SelectObject`,
+  `UpdateObjectState`, `WriteWorldState`; `ExecuteAction`) — and
+  `rammp_perception_interfaces` (`DetectedObject`, `ObjectDetections`,
+  `TrackingStatus`; `Detect`, `StartTracking`, `RenewTracking`, `StopTracking`).
+  `ObjectDetections` moved from the orchestrator package to perception before
+  release, and is the one detection message every perception node publishes,
+  whichever model is behind it; the Orchestrator reads it and keeps
+  `ObjectRecord` as its World State record. Masks travel as one mono16 label
+  image per frame, pixel value = `mask_id`, so a frame with ten objects is one
+  image rather than ten. A tracking session may hold a lease like `OpenStream`,
+  so a crashed client cannot leave the GPU busy. Minor: new packages, no changes
+  to any existing type.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a

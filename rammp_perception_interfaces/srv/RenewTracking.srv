@@ -1,0 +1,5 @@
+uint32  session_id
+float64 lease_s       # new lease from now; 0 means the lease_s the session started with
+---
+bool   renewed        # false if session_id is not the open session; true and a no-op without leases
+string message

@@ -1,0 +1,10 @@
+# One high-quality detection on the next frame from image_topic. Slow by design
+# (hundreds of milliseconds): this is the expert query, not a stream.
+
+string[] prompts          # one text query each, e.g. ["microwave", "cabinet"]; must not be empty
+string   image_topic      # sensor_msgs/Image; "" means the node's default_image_topic
+float32  score_threshold  # keep objects scoring at least this; 0 means the node's default
+---
+bool          success
+string        message
+ObjectDetections detections
