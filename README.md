@@ -126,13 +126,12 @@ Every package carries the repo's one version.
   `rammp_perception_interfaces` (`DetectedObject`, `ObjectDetections`,
   `TrackingStatus`; `Detect`, `StartTracking`, `RenewTracking`, `StopTracking`).
   `ObjectDetections` moved from the orchestrator package to perception before
-  release, and is the one detection message every perception node publishes,
+  release (anyone building from `dev` switches the import), and is the one detection message every perception node publishes,
   whichever model is behind it; the Orchestrator reads it and keeps
   `ObjectRecord` as its World State record. Masks travel as one mono16 label
   image per frame, pixel value = `mask_id`, so a frame with ten objects is one
   image rather than ten. A tracking session may hold a lease like `OpenStream`,
-  so a crashed client cannot leave the GPU busy. Minor: new packages, no changes
-  to any existing type.
+  so a crashed client cannot leave the GPU busy.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a

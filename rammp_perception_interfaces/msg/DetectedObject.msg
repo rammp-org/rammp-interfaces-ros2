@@ -10,7 +10,10 @@ string perception_class  # what the object is: the publisher's class name, or th
 float32 score            # detection confidence in [0, 1]
 uint8 state
 float32[4] box           # [x_min, y_min, x_max, y_max] in source-image pixels; all 0 when not visible
-uint16 mask_id           # this object's value in label_image, >= 1; 0 when it has no mask this frame
+uint16 mask_id           # this object's value in label_image, >= 1; 0 when it has no mask this frame (and always
+                         # in TrackingStatus). A non-zero mask_id can still cover no pixels: overlapping masks go
+                         # to the higher-scoring object.
 
 bool has_pose            # false until the publisher can place the object in 3D (e.g. from aligned depth)
-geometry_msgs/Pose pose  # in header.frame_id of the enclosing ObjectDetections; valid only when has_pose
+geometry_msgs/Pose pose  # in the enclosing message's header.frame_id (ObjectDetections or TrackingStatus);
+                         # valid only when has_pose

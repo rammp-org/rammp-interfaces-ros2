@@ -5,7 +5,7 @@
 
 string[] prompts
 string   image_topic          # "" means the node's default_image_topic
-float32  score_threshold      # 0 means the node's default
+float32  score_threshold      # 0 means the node's default; to keep nearly everything, pass a small positive value
 float64  lease_s              # > 0: the session ends lease_s after the last Start or Renew, where the server
                               # enforces leases (it refuses 0 then). Ignored by a server that does not.
 float32  redetect_period_s    # re-run detection this often to pick up new objects; 0 = never
@@ -14,4 +14,5 @@ uint32   max_objects          # track at most this many, highest score first; 0 
 bool          accepted
 uint32        session_id      # pass to RenewTracking and StopTracking
 string        message
-ObjectDetections detections   # the detection that seeded the session
+ObjectDetections detections   # the detection that seeded the session; its instance_ids are the ones the session
+                              # then publishes
