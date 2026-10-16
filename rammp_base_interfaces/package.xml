@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rammp_base_interfaces</name>
-  <version>1.2.0</version>
+  <version>1.1.0</version>
   <description>The RAMMP base interface: observing the mobile base — the MIB's status and seat state. The contract, versioned independently of any driver that implements it.</description>
   <maintainer email="eileen.wang@pitt.edu">Eileen Wang</maintainer>
   <license>Proprietary</license>

@@ -117,21 +117,23 @@ Every package carries the repo's one version.
   policy above. The three `GoTo*` goals and `OpenStream`'s request append
   `control_mode` (`GoTo*` only) and `ImpedanceGains gains`, with defaults that mean
   today's behaviour.
-- **1.2.0**, unreleased: new packages `rammp_orchestrator_interfaces` — the
-  Orchestrator/engine contract (`CapabilityManifest`, `ActionSpec`,
-  `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectRecord`, `Progress`,
-  `Result`; `Activate`, `Control`, `Deselect`, `GetDetectedObjects`,
-  `GetWorldState`, `Hibernate`, `RegisterEngine`, `RequestIntent`, `SelectObject`,
-  `UpdateObjectState`, `WriteWorldState`; `ExecuteAction`) — and
+- **Unreleased** (`feature/11-perception-interfaces`): new package
   `rammp_perception_interfaces` (`DetectedObject`, `ObjectDetections`,
   `TrackingStatus`; `Detect`, `StartTracking`, `RenewTracking`, `StopTracking`).
-  `ObjectDetections` moved from the orchestrator package to perception before
-  release (anyone building from `dev` switches the import), and is the one detection message every perception node publishes,
-  whichever model is behind it; the Orchestrator reads it and keeps
-  `ObjectRecord` as its World State record. Masks travel as one mono16 label
-  image per frame, pixel value = `mask_id`, so a frame with ten objects is one
-  image rather than ten. A tracking session may hold a lease like `OpenStream`,
-  so a crashed client cannot leave the GPU busy.
+  `ObjectDetections` moves here from `rammp_orchestrator_interfaces` (anyone
+  building from `dev` switches the import) and is the one detection message
+  every perception node publishes, whichever model is behind it; the
+  Orchestrator reads it and keeps `ObjectRecord` as its World State record.
+  Masks travel as one mono16 label image per frame, pixel value = `mask_id`, so
+  a frame with ten objects is one image rather than ten. A tracking session may
+  hold a lease like `OpenStream`, so a crashed client cannot leave the GPU busy.
+- **1.2.0**, 2026-10-09: new package `rammp_orchestrator_interfaces` — the
+  Orchestrator/engine contract (`CapabilityManifest`, `ActionSpec`,
+  `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectDetections`,
+  `ObjectRecord`, `Progress`, `Result`; `Activate`, `Control`, `Deselect`,
+  `GetDetectedObjects`, `GetWorldState`, `Hibernate`, `RegisterEngine`,
+  `RequestIntent`, `SelectObject`, `UpdateObjectState`, `WriteWorldState`;
+  `ExecuteAction`). Minor: new package, no changes to any existing type.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a
