@@ -10,7 +10,7 @@
 # transform.
 #
 # Frame: LOCAL_WORLD_ALIGNED -- a world-aligned frame at the tool, NOT the body
-# frame. Linear and angular parts are both expressed in base_link orientation.
+# frame. Linear and angular parts are both expressed in arm_mount orientation.
 #
 # There is deliberately no wrench here. The driver has no force estimate of its own,
 # and the arm's tool_external_wrench is in KORTEX's tool frame; publishing a zero or
