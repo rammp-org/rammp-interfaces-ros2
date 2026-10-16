@@ -10,7 +10,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/CapabilityManifest.msg"
   "msg/EngineActivation.msg"
   "msg/Intent.msg"
-  "msg/ObjectDetections.msg"
   "msg/ObjectRecord.msg"
   "msg/Progress.msg"
   "msg/Result.msg"
