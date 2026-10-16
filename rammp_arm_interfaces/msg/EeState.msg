@@ -10,7 +10,7 @@
 # transform.
 #
 # Frame: LOCAL_WORLD_ALIGNED -- a world-aligned frame at the tool, NOT the body
-# frame. Linear and angular parts are both expressed in base_link orientation.
+# frame. Linear and angular parts are both expressed in arm_mount orientation.
 #
 # The wrench is the driver's OWN estimate of the external wrench at the tool --
 # what the environment applies to the EE, [force; torque] in N / N*m, same frame,
