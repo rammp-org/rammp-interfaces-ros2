@@ -8,7 +8,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
 | `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
-| `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
+| `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
 | `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 | `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
 
@@ -37,6 +37,18 @@ describe how the Orchestrator and an engine talk to each other, and that
 conversation is identical whether the engine behind it drives an arm, a base, or
 a microwave. The contract is complete without knowing what is being controlled —
 it is, in fact, specifically the layer that lets the Orchestrator not know.
+
+The second subsystem has now arrived, and the base's `TwistSetpoint` and
+`PoseSetpoint` were the first test of what it shares with the arm. They
+have the same shape as the arm's (a `geometry_msgs` payload plus a token) and were
+still given their own types in `rammp_base_interfaces`. The shared part, the token
+protocol, already lives here; what is left is a `Pose` or `Twist` whose frame and
+meaningful components differ by subsystem and are expected to drift further. A
+shared type would turn every base-only change into a major bump for the arm. The
+same holds for locomanipulation: a whole-body controller is a new contract (an
+end-effector target in a world frame), not the arm's and base's setpoints
+unified. What it genuinely needs from here is a way to hold the arm and the base
+together, atomically, and that is an arbitration change when the time comes.
 
 ## Everything shared lives here
 
@@ -109,6 +121,11 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
+  new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
+  frame), each carrying the arbitration token. Same shape as the arm's
+  setpoints but separate types; see "Where the line between them is" above.
+  Minor: new messages only.
 - **Unreleased** (`feat/compliant-everything`): new `ImpedanceGains` message (a
   named compliance profile — session default / soft / medium / stiff — or
   custom gains) and token-gated `SetGains` service (re-points the session
