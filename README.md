@@ -38,17 +38,15 @@ conversation is identical whether the engine behind it drives an arm, a base, or
 a microwave. The contract is complete without knowing what is being controlled —
 it is, in fact, specifically the layer that lets the Orchestrator not know.
 
-The second subsystem has now arrived, and the base's `TwistSetpoint` and
-`PoseSetpoint` were the first test of what it shares with the arm. They
-have the same shape as the arm's (a `geometry_msgs` payload plus a token) and were
-still given their own types in `rammp_base_interfaces`. The shared part, the token
-protocol, already lives here; what is left is a `Pose` or `Twist` whose frame and
-meaningful components differ by subsystem and are expected to drift further. A
-shared type would turn every base-only change into a major bump for the arm. The
-same holds for locomanipulation: a whole-body controller is a new contract (an
-end-effector target in a world frame), not the arm's and base's setpoints
-unified. What it genuinely needs from here is a way to hold the arm and the base
-together, atomically, and that is an arbitration change when the time comes.
+Setpoints are kept per subsystem. The arm's and the base's `TwistSetpoint` and
+`PoseSetpoint` share a shape (a `geometry_msgs` payload plus a token) but are
+separate types: the payload's frame and meaningful components are specific to each
+subsystem and expected to diverge, and a shared type would make every base-only
+change a major bump for the arm. The part they do share, the token protocol,
+lives here. Locomanipulation follows the same rule: a whole-body controller is its
+own contract (an end-effector target in a world frame), not a merge of the two
+setpoints, and the shared piece it needs is atomic arbitration over the arm and
+the base together.
 
 ## Everything shared lives here
 
