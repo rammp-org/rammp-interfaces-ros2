@@ -3,6 +3,12 @@
 # than leaving them hanging. By operational contract this is called by the task
 # orchestrator and nothing else.
 string owner_id      # human-readable label; mirrors the sender_id on arbitrated goals
+# Optional pre-generated key, so one orchestrator key can be shared across several
+# resources. All-zero (the default) means "none": the resource mints a fresh token.
+# A supplied key gives up two things minting guarantees: a module handed the key
+# early is refused until the grant lands, and re-acquiring with the same key does
+# not lock out a stale holder of it.
+uint8[16] token [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ---
 bool      accepted
 uint8[16] token      # the capability; put it on every command this resource arbitrates
