@@ -1,0 +1,29 @@
+# Called directly by an active engine node against the UI bridge's
+# ~/request_user_input server, bypassing the Orchestrator entirely -- it
+# has no visibility into this exchange. Lets an engine ask the user a
+# question mid-task: a button choice (the engine supplies the panel
+# content itself), an object tap on its engine's own overlay camera stream
+# (rammp-UI-bridge docs/NODE_INTERFACE.md §3.3.1), or both at once.
+#
+# Only one engine may have a goal active against this action at a time,
+# mirroring the Orchestrator's own one-engine-executing-at-a-time
+# invariant; the bridge rejects a second concurrent goal.
+
+string engine_id          # the calling engine's own id (its CapabilityManifest.engine_id) --
+                          # lets the bridge tag any pushed `objects` with this engine's own
+                          # overlay camera stream_id (§3.3.1), and label log/error messages
+string panel_json        # optional: InteractionPanel-shaped JSON (title/message/buttons) the
+                          # engine wants shown; empty if this request is object-only
+ObjectCandidate[] objects # optional: candidate objects the user can tap on this engine's own
+                          # overlay stream; empty if this request is panel-only
+# At least one of panel_json / objects must be non-empty.
+---
+uint8 STATUS_BUTTON=0     # user tapped one of panel_json's buttons
+uint8 STATUS_OBJECT=1     # user tapped one of objects
+uint8 STATUS_CANCELLED=2  # engine cancelled the goal before either happened
+uint8 status
+string button_id         # set iff status == STATUS_BUTTON
+string instance_id       # set iff status == STATUS_OBJECT
+---
+# No feedback: this is a single wait-for-one-tap request, not a
+# long-running operation with intermediate progress.

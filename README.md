@@ -11,6 +11,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
 | `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 | `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
+| `rammp_ui_bridge_interfaces` | the contract an active capability engine uses to ask the UI bridge directly for user input -- a button choice, an object tap on the engine's own overlay camera stream, or both -- bypassing the Orchestrator entirely |
 
 ### Where the line between them is
 
@@ -37,6 +38,16 @@ describe how the Orchestrator and an engine talk to each other, and that
 conversation is identical whether the engine behind it drives an arm, a base, or
 a microwave. The contract is complete without knowing what is being controlled —
 it is, in fact, specifically the layer that lets the Orchestrator not know.
+
+`rammp_ui_bridge_interfaces` is the same test applied to a different pair: its
+one action (`RequestUserInput`) describes how an active engine and the UI
+bridge talk to each other while soliciting mid-task user input, and the
+Orchestrator is deliberately not a party to that conversation at all — the
+UI bridge serves the action, any engine may call it, and nothing about the
+contract depends on which engine or which capability is running. Keeping it
+out of `rammp_orchestrator_interfaces` keeps that package's own contract
+honest: the Orchestrator genuinely has no field, service, or type involved
+in this exchange to point to.
 
 Setpoints are kept per subsystem. The arm's and the base's `TwistSetpoint` and
 `PoseSetpoint` share a shape (a `geometry_msgs` payload plus a token) but are
@@ -118,6 +129,20 @@ runtime can tell, and these rules can relax.
 ### Version history
 
 Every package carries the repo's one version.
+
+- **Unreleased** (`feat/UI-bridge-interface`): new package
+  `rammp_ui_bridge_interfaces` (`ObjectCandidate`; `RequestUserInput`) --
+  the contract an active engine uses to ask the UI bridge directly for
+  user input (a button choice, an object tap on the engine's own overlay
+  camera stream, or both), bypassing the Orchestrator entirely. Minor:
+  new package only. `rammp_orchestrator_interfaces/ObjectRecord` appends
+  `box` (`float32[4]`, all-zero default) and `stream_id` (`string`,
+  empty default) so the UI bridge can read pixel-space bounding boxes
+  from `GetDetectedObjects` without its own Perception subscription --
+  populated from whichever write path (Perception, or an engine's
+  `update_object_state`) last touched an instance. Minor: appended at
+  the end with defaults that mean "no box reported yet," so an older
+  client is unaffected under Cyclone DDS (see the policy above).
 
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
