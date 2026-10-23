@@ -47,7 +47,12 @@ UI bridge serves the action, any engine may call it, and nothing about the
 contract depends on which engine or which capability is running. Keeping it
 out of `rammp_orchestrator_interfaces` keeps that package's own contract
 honest: the Orchestrator genuinely has no field, service, or type involved
-in this exchange to point to.
+in this exchange to point to. Its other message, `EngineOverlayImage`, reuses
+`rammp_common_interfaces`'s token field directly (not by depending on that
+package's types — the field is just `uint8[16] token`, same convention as
+the arm/base setpoints) because the overlay-camera topic has the identical
+problem a hardware resource does: more than one caller *could* publish to it,
+and only whoever currently holds the bridge's grant should actually be heard.
 
 Setpoints are kept per subsystem. The arm's and the base's `TwistSetpoint` and
 `PoseSetpoint` share a shape (a `geometry_msgs` payload plus a token) but are
@@ -143,6 +148,16 @@ Every package carries the repo's one version.
   `update_object_state`) last touched an instance. Minor: appended at
   the end with defaults that mean "no box reported yet," so an older
   client is unaffected under Cyclone DDS (see the policy above).
+  New message `EngineOverlayImage` (`sensor_msgs/Image image`,
+  `uint8[16] token`): the shared overlay-camera topic every engine
+  publishes its own camera to (NODE_INTERFACE.md §3.3.1) carries this
+  type instead of a plain `sensor_msgs/Image`, so the bridge can tell
+  which engine's frames are current. `token` is the arbitration
+  capability from `rammp_common_interfaces/AcquireControl`, called
+  against the bridge's own arbitration server for this resource -- same
+  token-gating convention as `rammp_arm_interfaces/JointSetpoint` and
+  `rammp_base_interfaces/TwistSetpoint`, just for a bridge-owned
+  resource rather than a piece of hardware. Minor: new message only.
 
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
