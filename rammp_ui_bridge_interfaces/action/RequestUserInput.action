@@ -1,0 +1,51 @@
+# Called directly by an active engine node against the UI bridge's
+# ~/request_user_input server, bypassing the Orchestrator entirely -- it
+# has no visibility into this exchange. Lets an engine ask the user a
+# question mid-task: a button choice (the engine supplies the panel
+# content itself), an object tap on its engine's own overlay camera stream
+# (rammp-UI-bridge docs/NODE_INTERFACE.md §3.3.1), or both at once.
+#
+# Only one engine may have a goal active against this action at a time,
+# mirroring the Orchestrator's own one-engine-executing-at-a-time
+# invariant; the bridge rejects a second concurrent goal. `token` must
+# match the one most recently granted by the bridge's own
+# ~/ui_control/acquire_control (the same arbitration resource that gates
+# EngineOverlayImage frames, see rammp_common_interfaces' AcquireControl) --
+# a goal with a stale/mismatched token is rejected outright.
+#
+# Tapping an object does NOT complete this goal by itself -- the user may
+# tap several different objects in a row while deciding, and the engine
+# may react to each one (e.g. update its own highlight overlay, or call
+# ~/request_user_input/update to change the displayed message/candidate
+# list/highlighted selection) without the goal ending. Each tap is
+# reported as feedback instead. The goal only completes when the user
+# presses a button (STATUS_BUTTON) or the engine cancels
+# (STATUS_CANCELLED) -- by that point the engine is expected to already
+# know (from the feedback stream) which object, if any, is selected, and
+# the pressed button_id tells it what to do with that selection.
+
+string engine_id          # the calling engine's own id (its CapabilityManifest.engine_id) --
+                          # lets the bridge tag any pushed `objects` with this engine's own
+                          # overlay camera stream_id (§3.3.1), and label log/error messages
+uint8[16] token           # must match the currently-granted ~/ui_control token (see above)
+string panel_json        # optional: InteractionPanel-shaped JSON (title/message/buttons) the
+                          # engine wants shown; empty if this request is object-only
+ObjectCandidate[] objects # optional: candidate objects the user can tap on this engine's own
+                          # overlay stream; empty if this request is panel-only
+string selected_instance_id  # optional: one of objects' instance_id to show as already
+                          # highlighted/selected when the goal starts; empty for no
+                          # initial selection
+# At least one of panel_json / objects must be non-empty.
+---
+uint8 STATUS_BUTTON=0     # user pressed one of panel_json's buttons
+uint8 STATUS_CANCELLED=1  # engine cancelled the goal before that happened
+uint8 status
+string button_id         # set iff status == STATUS_BUTTON
+---
+# Sent once per object tap while the goal is still active (never after
+# the result above is sent). Informational only -- the engine decides
+# what, if anything, to do about it (e.g. call ~/request_user_input/update
+# to reflect the new selection back to the user).
+uint8 EVENT_OBJECT_TAPPED=0
+uint8 event_type
+string instance_id        # set iff event_type == EVENT_OBJECT_TAPPED

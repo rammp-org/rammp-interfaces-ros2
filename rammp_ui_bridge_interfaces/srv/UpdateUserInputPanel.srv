@@ -1,0 +1,26 @@
+# Lets the engine that currently owns an active RequestUserInput goal
+# (rammp_ui_bridge_interfaces/action/RequestUserInput.action) change what's
+# displayed to the user -- a new message/buttons, an updated candidate
+# object list, and/or which object is currently highlighted as selected --
+# without completing or restarting the goal. Typically called after a
+# RequestUserInput feedback message reports an object tap, e.g. to change
+# the panel's message to "<object> selected -- press Pick Up to continue"
+# and highlight that object.
+#
+# Only valid while the calling engine's RequestUserInput goal is still
+# active; refused (accepted=false) if there is no active goal, or if
+# `token` doesn't match the one currently granted (see
+# ~/ui_control/acquire_control, same resource RequestUserInput's own
+# token is checked against).
+
+uint8[16] token
+bool update_panel
+string panel_json              # replaces the current panel entirely; set iff update_panel
+bool update_objects
+ObjectCandidate[] objects      # replaces the current candidate list entirely; set iff update_objects
+bool update_selected
+string selected_instance_id    # highlight this instance_id ("" clears any highlight); set iff
+                                # update_selected
+---
+bool accepted
+string message

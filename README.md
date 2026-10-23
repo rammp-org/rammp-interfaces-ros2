@@ -11,6 +11,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
 | `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 | `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
+| `rammp_ui_bridge_interfaces` | the contract an active capability engine uses to ask the UI bridge directly for user input -- a button choice, an object tap on the engine's own overlay camera stream, or both -- bypassing the Orchestrator entirely |
 
 ### Where the line between them is
 
@@ -37,6 +38,30 @@ describe how the Orchestrator and an engine talk to each other, and that
 conversation is identical whether the engine behind it drives an arm, a base, or
 a microwave. The contract is complete without knowing what is being controlled —
 it is, in fact, specifically the layer that lets the Orchestrator not know.
+
+`rammp_ui_bridge_interfaces` is the same test applied to a different pair: its
+one action (`RequestUserInput`) and one service (`UpdateUserInputPanel`)
+describe how an active engine and the UI bridge talk to each other while
+soliciting mid-task user input, and the Orchestrator is deliberately not a
+party to that conversation at all — the UI bridge serves both, any engine
+may call them, and nothing about the contract depends on which engine or
+which capability is running. Keeping it out of `rammp_orchestrator_interfaces`
+keeps that package's own contract honest: the Orchestrator genuinely has no
+field, service, or type involved in this exchange to point to. Both
+`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel` reuse
+`rammp_common_interfaces`'s token field directly (not by depending on that
+package's types — the field is just `uint8[16] token`, same convention as
+the arm/base setpoints) because they share the identical problem a hardware
+resource does: more than one engine *could* call in, and only whoever
+currently holds the bridge's own arbitration grant (`~/ui_control/*`, one
+shared grant covering both the overlay topic and these two calls, since
+both represent the one currently-active engine's exclusive right to talk to
+the UI) should actually be heard. `RequestUserInput`'s goal intentionally
+does *not* complete when the user taps a candidate object -- only a button
+press or the engine's own cancel ends the goal -- because a tap is reported
+as feedback instead, letting the engine react (e.g. call
+`UpdateUserInputPanel` to reflect the new selection) without losing its
+place in a possibly-repeated tap/re-tap sequence.
 
 Setpoints are kept per subsystem. The arm's and the base's `TwistSetpoint` and
 `PoseSetpoint` share a shape (a `geometry_msgs` payload plus a token) but are
@@ -118,6 +143,42 @@ runtime can tell, and these rules can relax.
 ### Version history
 
 Every package carries the repo's one version.
+
+- **Unreleased** (`feat/UI-bridge-interface`): new package
+  `rammp_ui_bridge_interfaces` (`ObjectCandidate`; `RequestUserInput`) --
+  the contract an active engine uses to ask the UI bridge directly for
+  user input (a button choice, an object tap on the engine's own overlay
+  camera stream, or both), bypassing the Orchestrator entirely. Minor:
+  new package only. `rammp_orchestrator_interfaces/ObjectRecord` appends
+  `box` (`float32[4]`, all-zero default) and `stream_id` (`string`,
+  empty default) so the UI bridge can read pixel-space bounding boxes
+  from `GetDetectedObjects` without its own Perception subscription --
+  populated from whichever write path (Perception, or an engine's
+  `update_object_state`) last touched an instance. Minor: appended at
+  the end with defaults that mean "no box reported yet," so an older
+  client is unaffected under Cyclone DDS (see the policy above).
+  New message `EngineOverlayImage` (`sensor_msgs/Image image`,
+  `uint8[16] token`): the shared overlay-camera topic every engine
+  publishes its own camera to (NODE_INTERFACE.md §3.3.1) carries this
+  type instead of a plain `sensor_msgs/Image`, so the bridge can tell
+  which engine's frames are current. `token` is the arbitration
+  capability from `rammp_common_interfaces/AcquireControl`, called
+  against the bridge's own arbitration server for this resource -- same
+  token-gating convention as `rammp_arm_interfaces/JointSetpoint` and
+  `rammp_base_interfaces/TwistSetpoint`, just for a bridge-owned
+  resource rather than a piece of hardware. Minor: new message only.
+  `RequestUserInput`'s goal gained `token` (checked against that same
+  bridge-owned arbitration grant) and `selected_instance_id` (optional
+  initial highlight); its result dropped `STATUS_OBJECT`/`instance_id` --
+  an object tap no longer completes the goal, it's reported via a new
+  feedback message (`event_type`/`instance_id`) instead, so the engine
+  can react to repeated taps without the goal ending. New service
+  `UpdateUserInputPanel` lets the engine holding an active
+  `RequestUserInput` goal update the displayed panel/candidate
+  list/highlighted selection without completing or restarting it.
+  Minor: `RequestUserInput`'s goal/result/feedback and the new service
+  are all pre-release changes on this same unreleased branch, not a
+  break to anything already shipped.
 
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
