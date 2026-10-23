@@ -40,19 +40,28 @@ a microwave. The contract is complete without knowing what is being controlled �
 it is, in fact, specifically the layer that lets the Orchestrator not know.
 
 `rammp_ui_bridge_interfaces` is the same test applied to a different pair: its
-one action (`RequestUserInput`) describes how an active engine and the UI
-bridge talk to each other while soliciting mid-task user input, and the
-Orchestrator is deliberately not a party to that conversation at all — the
-UI bridge serves the action, any engine may call it, and nothing about the
-contract depends on which engine or which capability is running. Keeping it
-out of `rammp_orchestrator_interfaces` keeps that package's own contract
-honest: the Orchestrator genuinely has no field, service, or type involved
-in this exchange to point to. Its other message, `EngineOverlayImage`, reuses
+one action (`RequestUserInput`) and one service (`UpdateUserInputPanel`)
+describe how an active engine and the UI bridge talk to each other while
+soliciting mid-task user input, and the Orchestrator is deliberately not a
+party to that conversation at all — the UI bridge serves both, any engine
+may call them, and nothing about the contract depends on which engine or
+which capability is running. Keeping it out of `rammp_orchestrator_interfaces`
+keeps that package's own contract honest: the Orchestrator genuinely has no
+field, service, or type involved in this exchange to point to. Both
+`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel` reuse
 `rammp_common_interfaces`'s token field directly (not by depending on that
 package's types — the field is just `uint8[16] token`, same convention as
-the arm/base setpoints) because the overlay-camera topic has the identical
-problem a hardware resource does: more than one caller *could* publish to it,
-and only whoever currently holds the bridge's grant should actually be heard.
+the arm/base setpoints) because they share the identical problem a hardware
+resource does: more than one engine *could* call in, and only whoever
+currently holds the bridge's own arbitration grant (`~/ui_control/*`, one
+shared grant covering both the overlay topic and these two calls, since
+both represent the one currently-active engine's exclusive right to talk to
+the UI) should actually be heard. `RequestUserInput`'s goal intentionally
+does *not* complete when the user taps a candidate object -- only a button
+press or the engine's own cancel ends the goal -- because a tap is reported
+as feedback instead, letting the engine react (e.g. call
+`UpdateUserInputPanel` to reflect the new selection) without losing its
+place in a possibly-repeated tap/re-tap sequence.
 
 Setpoints are kept per subsystem. The arm's and the base's `TwistSetpoint` and
 `PoseSetpoint` share a shape (a `geometry_msgs` payload plus a token) but are
@@ -158,6 +167,18 @@ Every package carries the repo's one version.
   token-gating convention as `rammp_arm_interfaces/JointSetpoint` and
   `rammp_base_interfaces/TwistSetpoint`, just for a bridge-owned
   resource rather than a piece of hardware. Minor: new message only.
+  `RequestUserInput`'s goal gained `token` (checked against that same
+  bridge-owned arbitration grant) and `selected_instance_id` (optional
+  initial highlight); its result dropped `STATUS_OBJECT`/`instance_id` --
+  an object tap no longer completes the goal, it's reported via a new
+  feedback message (`event_type`/`instance_id`) instead, so the engine
+  can react to repeated taps without the goal ending. New service
+  `UpdateUserInputPanel` lets the engine holding an active
+  `RequestUserInput` goal update the displayed panel/candidate
+  list/highlighted selection without completing or restarting it.
+  Minor: `RequestUserInput`'s goal/result/feedback and the new service
+  are all pre-release changes on this same unreleased branch, not a
+  break to anything already shipped.
 
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
