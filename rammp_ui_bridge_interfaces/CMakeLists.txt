@@ -6,7 +6,6 @@ find_package(action_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/ObjectCandidate.msg"
   "msg/EngineOverlayImage.msg"
   "action/RequestUserInput.action"
   "srv/UpdateUserInputPanel.srv"

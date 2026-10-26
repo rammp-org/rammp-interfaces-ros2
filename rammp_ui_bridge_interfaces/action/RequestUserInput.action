@@ -19,33 +19,52 @@
 # ~/request_user_input/update to change the displayed message/candidate
 # list/highlighted selection) without the goal ending. Each tap is
 # reported as feedback instead. The goal only completes when the user
-# presses a button (STATUS_BUTTON) or the engine cancels
-# (STATUS_CANCELLED) -- by that point the engine is expected to already
-# know (from the feedback stream) which object, if any, is selected, and
-# the pressed button_id tells it what to do with that selection.
+# presses a button (status "button") or the engine cancels (status
+# "cancelled") -- by that point the engine is expected to already know
+# (from the feedback stream) which object, if any, is selected, and the
+# pressed button_id tells it what to do with that selection.
+#
+# `panel_json`/`objects`/`selected_instance_id` were previously three
+# separate typed fields (one of them a ROS message array,
+# `ObjectCandidate[]`). They are now folded into one `request_json` JSON
+# string (see rammp-UI-bridge docs/INTERACTION_PANEL_SCHEMA.md) so every
+# field on this goal lives in one place, mirroring how `panel_json` itself
+# is already a JSON string. `ObjectCandidate.msg` is retired along with
+# this (no longer referenced by any interface).
 
 string engine_id          # the calling engine's own id (its CapabilityManifest.engine_id) --
                           # lets the bridge tag any pushed `objects` with this engine's own
                           # overlay camera stream_id (§3.3.1), and label log/error messages
 uint8[16] token           # must match the currently-granted ~/ui_control token (see above)
-string panel_json        # optional: InteractionPanel-shaped JSON (title/message/buttons) the
-                          # engine wants shown; empty if this request is object-only
-ObjectCandidate[] objects # optional: candidate objects the user can tap on this engine's own
-                          # overlay stream; empty if this request is panel-only
-string selected_instance_id  # optional: one of objects' instance_id to show as already
-                          # highlighted/selected when the goal starts; empty for no
-                          # initial selection
+string request_json
+# JSON object:
+#   {
+#     "panel_json": str,          # optional, default "" -- InteractionPanel-shaped JSON
+#                                 # (title/message/buttons/progress/style, see
+#                                 # rammp-UI-bridge docs/INTERACTION_PANEL_SCHEMA.md) the
+#                                 # engine wants shown; omitted/"" if this request is
+#                                 # object-only
+#     "objects": [                # optional, default [] -- candidate objects the user can
+#                                 # tap on this engine's own overlay stream; omitted/[] if
+#                                 # this request is panel-only
+#       {"instance_id": str, "perception_class": str, "box": [x_min, y_min, x_max, y_max]}
+#       # box is in the calling engine's own camera's pixel space
+#     ],
+#     "selected_instance_id": str  # optional, default "" -- one of objects' instance_id to
+#                                 # show as already highlighted/selected when the goal
+#                                 # starts; omitted/"" for no initial selection
+#   }
 # At least one of panel_json / objects must be non-empty.
 ---
-uint8 STATUS_BUTTON=0     # user pressed one of panel_json's buttons
-uint8 STATUS_CANCELLED=1  # engine cancelled the goal before that happened
-uint8 status
-string button_id         # set iff status == STATUS_BUTTON
+string result_json
+# JSON object:
+#   {"status": "button", "button_id": str}   # user pressed one of panel_json's buttons
+#   {"status": "cancelled"}                  # engine cancelled the goal before that happened
 ---
+string feedback_json
 # Sent once per object tap while the goal is still active (never after
 # the result above is sent). Informational only -- the engine decides
 # what, if anything, to do about it (e.g. call ~/request_user_input/update
 # to reflect the new selection back to the user).
-uint8 EVENT_OBJECT_TAPPED=0
-uint8 event_type
-string instance_id        # set iff event_type == EVENT_OBJECT_TAPPED
+# JSON object:
+#   {"event_type": "object_tapped", "instance_id": str}

@@ -145,7 +145,7 @@ runtime can tell, and these rules can relax.
 Every package carries the repo's one version.
 
 - **Unreleased** (`feat/UI-bridge-interface`): new package
-  `rammp_ui_bridge_interfaces` (`ObjectCandidate`; `RequestUserInput`) --
+  `rammp_ui_bridge_interfaces` (`RequestUserInput`) --
   the contract an active engine uses to ask the UI bridge directly for
   user input (a button choice, an object tap on the engine's own overlay
   camera stream, or both), bypassing the Orchestrator entirely. Minor:
@@ -179,6 +179,20 @@ Every package carries the repo's one version.
   Minor: `RequestUserInput`'s goal/result/feedback and the new service
   are all pre-release changes on this same unreleased branch, not a
   break to anything already shipped.
+  **Further revised, still on the same unreleased branch:** `RequestUserInput`'s
+  goal (`panel_json`/`objects`/`selected_instance_id`), result
+  (`status`/`button_id`), and feedback (`event_type`/`instance_id`) each
+  collapse into a single `request_json`/`result_json`/`feedback_json`
+  string field (JSON object, see `rammp-UI-bridge`
+  `docs/INTERACTION_PANEL_SCHEMA.md` for the exact shape of each) --
+  `ObjectCandidate.msg` is retired, since `objects[]` now travels as
+  plain JSON inside `request_json`/the `UpdateUserInputPanel` request
+  rather than a typed ROS message array. `UpdateUserInputPanel`'s
+  request collapses the same way: the three
+  `update_panel`/`update_objects`/`update_selected` bool flags are gone,
+  replaced by "key present in `request_json` means update this aspect."
+  Not a version bump beyond what's already pre-release here -- no tag of
+  this package has ever shipped.
 
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
