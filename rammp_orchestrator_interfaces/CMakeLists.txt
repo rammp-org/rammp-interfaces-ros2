@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetDetectedObjects.srv"
   "srv/GetWorldState.srv"
   "srv/Hibernate.srv"
+  "srv/MoveArm.srv"
   "srv/RegisterEngine.srv"
   "srv/RequestIntent.srv"
   "srv/SelectObject.srv"
