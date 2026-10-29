@@ -18,9 +18,10 @@
 #     anything moves, error_string naming what failed: "leg k/N: <reason>" for
 #     the plan of leg k (counted from 1: the move to targets[k-1]), or
 #     "blend: <reason>" when the legs plan but cannot be joined.
-#   - Otherwise, as the single-target action: NOT_AUTHORIZED (-8) for a token
-#     that does not hold control, and while executing PATH_TOLERANCE_VIOLATED,
-#     PREEMPTED, HALTED, ...
+#   - Otherwise, as the single-target action: a token that does not hold
+#     control, and while executing PATH_TOLERANCE_VIOLATED, PREEMPTED, HALTED,
+#     ... (the single-target actions currently report an unauthorized token as
+#     INVALID_GOAL, not NOT_AUTHORIZED; these do the same).
 #
 # Result is the single-target action's. Feedback is too, except that while
 # planning planner_state carries the same prefix: "leg 2/3: <cuRobo state>" or

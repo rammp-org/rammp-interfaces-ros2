@@ -21,9 +21,10 @@
 #     "blend: <reason>" when the legs plan but cannot be joined. The planner
 #     stamps every plan with its frame; a blended plan not stamped arm_mount is
 #     refused, as the driver refuses a GoToEEPose plan that is not.
-#   - Otherwise, as the single-target action: NOT_AUTHORIZED (-8) for a token
-#     that does not hold control, and while executing PATH_TOLERANCE_VIOLATED,
-#     PREEMPTED, HALTED, ...
+#   - Otherwise, as the single-target action: a token that does not hold
+#     control, and while executing PATH_TOLERANCE_VIOLATED, PREEMPTED, HALTED,
+#     ... (the single-target actions currently report an unauthorized token as
+#     INVALID_GOAL, not NOT_AUTHORIZED; these do the same).
 #
 # Result is the single-target action's. Feedback is too, except that while
 # planning planner_state carries the same prefix: "leg 2/3: <cuRobo state>" or
