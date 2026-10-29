@@ -1,29 +1,28 @@
 # Goal — move through several 7-joint configurations in ONE motion. Each leg is
 # planned as GoToJointConfig plans it (cuRobo plan_to_joints, collision-free), from
-# where the leg before it ends, and the legs are blended into one trajectory, so the
-# arm passes the configurations between still moving where blend_radius allows. The
-# last configuration always stops. Every overlap is collision-checked, keeps the
-# joint limits, and keeps the tool within blend_radius of where it is at that
-# configuration; the planner (RAMMP-CuRobo's /rammp_curobo/blend) decides how far
-# each corner is cut, and stops on the configuration where nothing can be.
+# where the leg before it ends, and the legs are blended into one trajectory
+# (RAMMP-CuRobo's /rammp_curobo/blend), so the arm passes the configurations
+# between still moving where each target's blend_radius allows. The last
+# configuration always stops. Every overlap is collision-checked, keeps the joint
+# limits, and keeps the tool within the target's blend_radius of where it is there.
 #
-# If any leg cannot be planned the goal ends PLANNING_FAILED before anything moves,
-# and error_string names the leg ("leg 2/3: ...").
+# HOW A FAILURE ARRIVES.
+#   - At submission, the goal is REJECTED (no result; the reason is in the
+#     driver's log, as for every GoTo action):
+#       no targets, a joint value that is not finite, a speed_scale out of
+#       range, or a blend_radius that is not finite and >= 0.
+#   - While planning, the goal is accepted and ends PLANNING_FAILED (-7) before
+#     anything moves, error_string naming what failed: "leg k/N: <reason>" for
+#     the plan of leg k (counted from 1: the move to targets[k-1]), or
+#     "blend: <reason>" when the legs plan but cannot be joined.
+#   - Executing, as the single-target action (PATH_TOLERANCE_VIOLATED, ...).
 #
-# Each target: positions only, 7 values, rad, joint_1..joint_7 (as
-# GoToJointConfig's target_joints); every other field of the point must be empty.
-trajectory_msgs/JointTrajectoryPoint[] targets   # at least one
-string sender_id                      # arbitration hook, mirrors ExecuteJointTrajectory
-uint8[16] token                       # arbitration capability from /acquire_control
-# Per leg (the move TO targets[k]): GoToJointConfig's speed_scale. Empty: 1.0 for
-# every leg; one value: that for every leg; otherwise one per target. Out of range
-# is refused, as on GoToJointConfig. The trajectory carries the speeds, so a slow
-# leg blends into a fast one.
-float64[] speed_scale
-# Per junction (between targets[k] and targets[k+1], so one fewer than targets), m:
-# how far the tool may pass from where it is at targets[k] to cut the corner; 0
-# stops on it. Empty: stop on every target.
-float64[] blend_radius
+# Result is the single-target action's. Feedback is too, except that while
+# planning planner_state carries the same prefix: "leg 2/3: <cuRobo state>" or
+# "blend: <state>".
+JointConfigTarget[] targets   # at least one; each carries its own leg's fields
+string sender_id              # arbitration hook, mirrors ExecuteJointTrajectory
+uint8[16] token               # arbitration capability from /acquire_control
 # No orientation_hold here on purpose, as on GoToJointConfig.
 # How the trajectory is EXECUTED, as on GoToJointConfig; one mode for the whole
 # motion.

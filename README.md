@@ -120,11 +120,12 @@ runtime can tell, and these rules can relax.
 Every package carries the repo's one version.
 
 - **Unreleased** (`SwapnilPande/go-to-many`): new arm actions `GoToEEPoses` and
-  `GoToJointConfigs`: `GoToEEPose` / `GoToJointConfig` through several targets in
-  one motion, with a speed scale and (poses) an orientation hold per leg and a
-  blend radius per junction, the legs blended by RAMMP-CuRobo's
-  `/rammp_curobo/blend`. Result and feedback are the single-target actions'.
-  Minor: new actions only.
+  `GoToJointConfigs`, `GoToEEPose` / `GoToJointConfig` through several targets in
+  one motion, and their target messages `EEPoseTarget` (pose, speed scale,
+  orientation hold, blend radius) and `JointConfigTarget` (joints, speed scale,
+  blend radius). The legs are blended by RAMMP-CuRobo's `/rammp_curobo/blend`.
+  Result and feedback are the single-target actions'. Minor: new messages and
+  actions only.
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
   frame), each carrying the arbitration token. Same shape as the arm's

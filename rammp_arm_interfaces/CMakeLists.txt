@@ -23,6 +23,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/StreamStatus.msg"
   "msg/ControllerCapability.msg"
   "msg/EeState.msg"
+  "msg/EEPoseTarget.msg"
+  "msg/JointConfigTarget.msg"
   "srv/OpenStream.srv"
   "srv/CloseStream.srv"
   "srv/ListControllers.srv"
