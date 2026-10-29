@@ -125,7 +125,8 @@ Every package carries the repo's one version.
   orientation hold, blend radius) and `JointConfigTarget` (joints, speed scale,
   blend radius). The legs are blended by RAMMP-CuRobo's `/rammp_curobo/blend`.
   Result and feedback are the single-target actions'. Minor: new messages and
-  actions only.
+  actions only. The two target messages are array elements inside a goal, so a
+  field added to either LATER is a MAJOR change (see their header comments).
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
   frame), each carrying the arbitration token. Same shape as the arm's

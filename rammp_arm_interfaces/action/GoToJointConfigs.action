@@ -4,18 +4,23 @@
 # (RAMMP-CuRobo's /rammp_curobo/blend), so the arm passes the configurations
 # between still moving where each target's blend_radius allows. The last
 # configuration always stops. Every overlap is collision-checked, keeps the joint
-# limits, and keeps the tool within the target's blend_radius of where it is there.
+# limits, and brings the tool within each target's blend_radius of where it would
+# be at that configuration.
 #
 # HOW A FAILURE ARRIVES.
 #   - At submission, the goal is REJECTED (no result; the reason is in the
-#     driver's log, as for every GoTo action):
-#       no targets, a joint value that is not finite, a speed_scale out of
-#       range, or a blend_radius that is not finite and >= 0.
+#     driver's log):
+#       no targets; a joint value that is not finite; a speed_scale out of range;
+#       a blend_radius that is negative or not finite; and otherwise as
+#       GoToJointConfig (an unknown control_mode, or gains other than the default
+#       on a POSITION goal).
 #   - While planning, the goal is accepted and ends PLANNING_FAILED (-7) before
 #     anything moves, error_string naming what failed: "leg k/N: <reason>" for
 #     the plan of leg k (counted from 1: the move to targets[k-1]), or
 #     "blend: <reason>" when the legs plan but cannot be joined.
-#   - Executing, as the single-target action (PATH_TOLERANCE_VIOLATED, ...).
+#   - Otherwise, as the single-target action: NOT_AUTHORIZED (-8) for a token
+#     that does not hold control, and while executing PATH_TOLERANCE_VIOLATED,
+#     PREEMPTED, HALTED, ...
 #
 # Result is the single-target action's. Feedback is too, except that while
 # planning planner_state carries the same prefix: "leg 2/3: <cuRobo state>" or
@@ -23,7 +28,6 @@
 JointConfigTarget[] targets   # at least one; each carries its own leg's fields
 string sender_id              # arbitration hook, mirrors ExecuteJointTrajectory
 uint8[16] token               # arbitration capability from /acquire_control
-# No orientation_hold here on purpose, as on GoToJointConfig.
 # How the trajectory is EXECUTED, as on GoToJointConfig; one mode for the whole
 # motion.
 uint8 CONTROL_MODE_POSITION=0
@@ -40,6 +44,6 @@ trajectory_msgs/JointTrajectoryPoint final_error   # joint-space final error
 ---
 # Feedback
 string  phase              # "planning" | "executing"
-string  planner_state      # cuRobo feedback 'state', relayed while planning
+string  planner_state      # cuRobo's state while planning, prefixed "leg k/N: " or "blend: "
 float32 fraction_complete  # execution progress (0 while planning)
 trajectory_msgs/JointTrajectoryPoint actual   # live measured q during execution

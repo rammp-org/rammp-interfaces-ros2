@@ -8,16 +8,22 @@
 #
 # HOW A FAILURE ARRIVES.
 #   - At submission, the goal is REJECTED (no result; the reason is in the
-#     driver's log, as for every GoTo action):
-#       no targets, a target frame other than arm_mount, a speed_scale out of
-#       range, an orientation_hold that is not one of the constants, or a
-#       blend_radius that is not finite and >= 0.
+#     driver's log):
+#       no targets; a target frame other than arm_mount; a pose that is not
+#       finite or whose orientation is not a unit quaternion; a speed_scale out
+#       of range; an orientation_hold that is not one of the constants; a
+#       blend_radius that is negative or not finite; and otherwise as GoToEEPose
+#       (an unknown control_mode, or gains other than the default on a POSITION
+#       goal).
 #   - While planning, the goal is accepted and ends PLANNING_FAILED (-7) before
 #     anything moves, error_string naming what failed: "leg k/N: <reason>" for
 #     the plan of leg k (counted from 1: the move to targets[k-1]), or
-#     "blend: <reason>" when the legs plan but cannot be joined. A blended plan
-#     not in arm_mount is refused as GoToEEPose refuses one.
-#   - Executing, as the single-target action (PATH_TOLERANCE_VIOLATED, ...).
+#     "blend: <reason>" when the legs plan but cannot be joined. The planner
+#     stamps every plan with its frame; a blended plan not stamped arm_mount is
+#     refused, as the driver refuses a GoToEEPose plan that is not.
+#   - Otherwise, as the single-target action: NOT_AUTHORIZED (-8) for a token
+#     that does not hold control, and while executing PATH_TOLERANCE_VIOLATED,
+#     PREEMPTED, HALTED, ...
 #
 # Result is the single-target action's. Feedback is too, except that while
 # planning planner_state carries the same prefix: "leg 2/3: <cuRobo state>" or
@@ -40,6 +46,6 @@ trajectory_msgs/JointTrajectoryPoint final_error   # joint-space final error
 ---
 # Feedback
 string  phase              # "planning" | "executing"
-string  planner_state      # cuRobo feedback 'state', relayed while planning
+string  planner_state      # cuRobo's state while planning, prefixed "leg k/N: " or "blend: "
 float32 fraction_complete  # execution progress (0 while planning)
 trajectory_msgs/JointTrajectoryPoint actual   # live measured q during execution
