@@ -1,0 +1,12 @@
+uint8 PROFILE_SENSITIVE=0
+uint8 PROFILE_DEFAULT=1
+uint8 PROFILE_LOOSE=2
+uint8 PROFILE_CUSTOM=3
+uint8 profile
+float64[] custom     # exactly 7 values (N·m, joints 1..7) when profile == PROFILE_CUSTOM; empty otherwise
+uint8[16] token      # arbitration capability from /acquire_control
+---
+bool accepted
+string message       # why not, when accepted is false
+uint8 profile        # active after the call
+float64[7] thresholds
