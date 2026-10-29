@@ -12,6 +12,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ExecuteJointTrajectory.action"
   "action/GoToEEPose.action"
   "action/GoToJointConfig.action"
+  "action/GoToEEPoses.action"
+  "action/GoToJointConfigs.action"
   "action/GoToPreset.action"
   "msg/JointImpedanceGainValues.msg"
   "msg/ImpedanceGains.msg"

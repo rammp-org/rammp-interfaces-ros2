@@ -1,0 +1,49 @@
+# Goal — move the tool (arm_tool_frame) through several poses in arm_mount in ONE
+# motion. Each leg is planned as GoToEEPose plans it (cuRobo, collision-free), from
+# where the leg before it ends, and the legs are blended into one trajectory, so the
+# arm passes the poses between still moving where blend_radius allows. The last
+# pose always stops. Every overlap is collision-checked, keeps the joint limits and
+# each held leg's hold, and keeps the tool within blend_radius of that pose; the
+# planner (RAMMP-CuRobo's /rammp_curobo/blend) decides how far each corner is cut,
+# and stops on the pose where nothing can be.
+#
+# If any leg cannot be planned the goal ends PLANNING_FAILED before anything moves,
+# and error_string names the leg ("leg 2/3: ...").
+geometry_msgs/PoseStamped[] targets   # each frame_id MUST be arm_mount; at least one
+string sender_id                      # arbitration hook, mirrors ExecuteJointTrajectory
+uint8[16] token                       # arbitration capability from /acquire_control
+# Per leg (the move TO targets[k]): GoToEEPose's speed_scale. Empty: 1.0 for every
+# leg; one value: that for every leg; otherwise one per target. Out of range is
+# refused, as on GoToEEPose. The trajectory carries the speeds, so a slow leg
+# blends into a fast one.
+float64[] speed_scale
+# Per leg: GoToEEPose's orientation_hold, kept through that leg's overlaps too.
+# Empty: HOLD_NONE for every leg; one value: that for every leg; otherwise one per
+# target. A value that is not one of the constants is refused at submission.
+uint8 HOLD_NONE=0     # orientation free — the planner reorients as it likes
+uint8 HOLD_LEVEL=1    # keep the tool's tilt; spin about arm_mount Z free in transit
+uint8 HOLD_FIXED=2    # keep the orientation entirely
+uint8[] orientation_hold
+# Per junction (between targets[k] and targets[k+1], so one fewer than targets), m:
+# how far the tool may pass from targets[k] to cut the corner; 0 stops on it.
+# Empty: stop on every target, as a sequence of GoToEEPose goals would, but in one
+# goal.
+float64[] blend_radius
+# How the trajectory is EXECUTED, as on GoToEEPose; one mode for the whole motion.
+uint8 CONTROL_MODE_POSITION=0
+uint8 CONTROL_MODE_IMPEDANCE=1
+uint8 control_mode 0
+ImpedanceGains gains
+---
+# Result
+int32   error_code   # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4,
+                     # PREEMPTED=-6, PLANNING_FAILED=-7,
+                     # NOT_AUTHORIZED=-8, HALTED=-9
+string  error_string
+trajectory_msgs/JointTrajectoryPoint final_error   # joint-space final error
+---
+# Feedback
+string  phase              # "planning" | "executing"
+string  planner_state      # cuRobo feedback 'state', relayed while planning
+float32 fraction_complete  # execution progress (0 while planning)
+trajectory_msgs/JointTrajectoryPoint actual   # live measured q during execution
