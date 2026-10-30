@@ -14,5 +14,5 @@ ImpedanceGains gains
 ---
 bool     accepted
 string[] channels       # where to publish -- the driver tells you
-int32    error_code     # 0, or -10 STREAM_REJECTED
+int32    error_code     # 0, -10 STREAM_REJECTED, or -11 CONTACT_STOP (refused while a contact stop is latched)
 string   message
