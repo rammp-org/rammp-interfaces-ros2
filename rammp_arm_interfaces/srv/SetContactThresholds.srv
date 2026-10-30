@@ -1,3 +1,10 @@
+# Switch the arm's contact thresholds. Token-gated like a goal; holds until the
+# next call.
+#
+# `custom` is unbounded on purpose: empty means "not custom". It is read only for
+# PROFILE_CUSTOM and must then hold exactly 7 values, each finite, > 0 and at or
+# under the driver's ceiling for that joint. Anything else is refused with a
+# message naming the joint and the limit; nothing is clamped.
 uint8 PROFILE_DEFAULT=0
 uint8 PROFILE_SENSITIVE=1
 uint8 PROFILE_LOOSE=2
@@ -7,6 +14,6 @@ float64[] custom     # exactly 7 values (N·m, joints 1..7) when profile == PROF
 uint8[16] token      # arbitration capability from /acquire_control
 ---
 bool accepted
-string message       # why not, when accepted is false
-uint8 profile        # active after the call
-float64[7] thresholds
+string message       # why not, when accepted is false; empty when accepted
+uint8 profile        # active after the call, accepted or not
+float64[7] thresholds  # N·m, active after the call, accepted or not
