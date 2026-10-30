@@ -121,11 +121,10 @@ Every package carries the repo's one version.
 
 - **Unreleased** (`SwapnilPande/contact-detection`): new arm service
   `SetContactThresholds` (token-gated; `PROFILE_DEFAULT`, `_SENSITIVE`, `_LOOSE`
-  or `_CUSTOM` with 7 per-joint values, N·m) and message `ContactMonitorState`
-  (the unexpected-contact monitor: residual, thresholds, phase, the last trip).
-  New result code `CONTACT_STOP=-11`, documented on every arm action's
-  `error_code` and on `OpenStream`'s: the arm stopped on unexpected contact and
-  needs `/clear_faults`. Minor: new types, and comment-only changes elsewhere.
+  or `_CUSTOM` with 7 per-joint values, N·m). New result code
+  `CONTACT_STOP=-11`, documented on every arm action's `error_code` and on
+  `OpenStream`'s: the arm stopped on unexpected contact and needs
+  `/clear_faults`. Minor: a new type, and comment-only changes elsewhere.
 - **Unreleased** (`SwapnilPande/go-to-many`): new arm actions `GoToEEPoses` and
   `GoToJointConfigs`, `GoToEEPose` / `GoToJointConfig` through several targets in
   one motion, and their target messages `EEPoseTarget` (pose, speed scale,
