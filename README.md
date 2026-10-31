@@ -119,6 +119,12 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **Unreleased** (`SwapnilPande/observer-wrench`): `EeState` appends
+  `uint8 wrench_source` (default `0`) after `wrench`, with constants
+  `WRENCH_SOURCE_QUASI_STATIC=0` and `WRENCH_SOURCE_OBSERVER=1`, and its header
+  comment says which estimate the driver publishes when (kinova-gen3-driver#112).
+  Minor: one field appended at the end with a default. The default is the
+  quasi-static source, which is also what every publisher sent before this field.
 - **Unreleased** (`SwapnilPande/contact-detection`): new arm service
   `SetContactThresholds` (token-gated; `PROFILE_DEFAULT`, `_SENSITIVE`, `_LOOSE`
   or `_CUSTOM` with 7 per-joint values, N·m). New result code
