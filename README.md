@@ -119,6 +119,10 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **Unreleased** (`SwapnilPande/observer-wrench`): `EeState`'s header comment
+  says which external-torque estimate the driver's wrench comes from when: the
+  contact observer while it runs and has settled, the quasi-static `g(q) − τ`
+  otherwise (kinova-gen3-driver#112). Patch: comments only.
 - **Unreleased** (`SwapnilPande/contact-detection`): new arm service
   `SetContactThresholds` (token-gated; `PROFILE_DEFAULT`, `_SENSITIVE`, `_LOOSE`
   or `_CUSTOM` with 7 per-joint values, N·m). New result code
