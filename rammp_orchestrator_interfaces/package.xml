@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rammp_orchestrator_interfaces</name>
-  <version>1.2.0</version>
+  <version>2.0.0</version>
   <description>The contract between the RAMMP Orchestrator and any engine that plugs into it: capability registration, object selection and activation, action execution with progress/result reporting, intent delegation between engines, and World State read/write. Complete without knowing which subsystem an engine controls, so it lives alongside the other cross-cutting contracts rather than in any one engine's repo.</description>
   <maintainer email="guo@assistivetech.dev">Liyun Guo</maintainer>
   <license>Proprietary</license>
