@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>rammp_ui_bridge_interfaces</name>
-  <version>1.2.0</version>
+  <version>2.0.0</version>
   <description>The contract an active capability engine uses to ask the UI bridge for user input directly -- a button choice, an object tap on the engine's own overlay camera stream, or both -- bypassing the Orchestrator entirely. Lives apart from rammp_orchestrator_interfaces because the Orchestrator has no part in, and no visibility into, this exchange.</description>
   <maintainer email="guo@assistivetech.dev">Liyun Guo</maintainer>
   <license>Proprietary</license>
