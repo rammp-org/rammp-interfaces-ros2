@@ -33,9 +33,11 @@
 # Both read a held payload as external force. Contact-detection grade, not
 # force-control grade: a few N of noise at the tool (on a position-mode tour with
 # nobody touching, force error median 1.9 N with the observer, 3.3 N
-# quasi-static). A client doing fast force control wants the quasi-static
-# estimate's zero lag, or a faster source. NaN while the arm reports a fault.
-# Zero in sim, where the simulated arm reports tau = g(q) and nothing pushes on it.
+# quasi-static). This message does not say which estimate it carries. A client
+# doing fast force control that wants the zero-lag quasi-static estimate computes
+# g(q) - effort from /joint_states itself. NaN while the arm reports a fault.
+# In sim, zero under position control, where the simulated arm reports
+# tau = g(q); under torque control the sim reports the commanded torque.
 std_msgs/Header header
 geometry_msgs/Pose   pose
 geometry_msgs/Twist  twist
