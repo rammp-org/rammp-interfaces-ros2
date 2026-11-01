@@ -180,6 +180,19 @@ Every package carries the repo's one version.
   resource rather than a piece of hardware. Minor: new package only --
   no tag of it has ever shipped.
 
+- **Unreleased** (`ewang360/base-mib-status-and-drive-command`): `rammp_base_interfaces`
+  **replaces `MibState` with `MibStatus`**, a field-for-field mirror of the MIB's own
+  status struct (rammp-org/rammp-rtps `messages/mib_message.hpp`): all eight MIB
+  states (`INITIALIZING`, `IDLE`, `ENABLED`, `ERROR`, `AUTONOMOUS`, `SHARED`, `ESTOP`,
+  `PUSH_ASSIST`, with the rtps enum's values), the active drive profile, the seat
+  pose as a nested `SeatState`, the MIB's clock, speed, a sequence number and the
+  error text. `MibState`'s four-value collapse lost `ESTOP` and the autonomy states.
+  `SeatState` stays as the nested type, with units, and loses its own topic. New
+  `DriveCommand`, which the Jetson sends to put the MIB in `AUTONOMOUS` or `SHARED`;
+  the joystick sends the same message for `ENABLE`, `DISABLE` and push assist. The
+  MIB publishes and reads these as raw RTPS under the ROS 2 type names, so the
+  `.msg` files mirror the rtps structs and say so. **MAJOR**: a message is removed.
+  For rammp-org/RAMMP-mib-fw#53 and #24 here.
 - **Unreleased** (`SwapnilPande/observer-wrench`): `EeState`'s header comment
   says which external-torque estimate the driver's wrench comes from when: the
   contact observer while it runs and has settled, the quasi-static `g(q) − τ`
