@@ -16,7 +16,7 @@ uint8 SYSTEM_STATE_ERROR = 3         # bring-up or runtime fault; error_message 
 uint8 SYSTEM_STATE_AUTONOMOUS = 4    # the Jetson drives on TwistSetpoint; a joystick touch ends it (IDLE)
 uint8 SYSTEM_STATE_SHARED = 5        # the Jetson and the joystick drive together
 uint8 SYSTEM_STATE_ESTOP = 6         # emergency stop: drive cut and held; IDLE once the latch clears
-uint8 SYSTEM_STATE_PUSH_ASSIST = 7   # an assistant drives from the push handle; the joystick is not read for driving
+uint8 SYSTEM_STATE_PUSH_ASSIST = 7   # an assistant drives from the push handle; the joystick is not read for driving; DriveCommand.push_assist enters and leaves it
 
 # active_profile values (rammp::DriveProfile)
 uint8 PROFILE_LOW = 0

@@ -11,10 +11,13 @@
 #   SHARED      any           SHARED
 #
 # The MIB decides: it accepts AUTONOMOUS and SHARED from IDLE, ENABLED and PUSH_ASSIST,
-# and nothing from INITIALIZING, ESTOP or ERROR. Send it on change only, never
-# repeated, and read the outcome in MibStatus.system_state. A joystick touch ends
-# AUTONOMOUS and stands until the Jetson asks again; repeating the request would take
-# the chair back from the user. Best-effort; publish best_effort.
+# and nothing from INITIALIZING, ESTOP or ERROR. Send it on change. MibStatus.system_state
+# is the answer: a request the MIB has not answered yet may be repeated (the link is
+# best-effort), and once MibStatus has shown the requested state the request is done. A
+# later change of state is the MIB's decision, not a lost packet, so ask again only on a
+# new decision of your own: a joystick touch ends AUTONOMOUS and stands until the Jetson
+# has a new reason to ask. Repeating the old request would take the chair back from the
+# user. Publish best_effort.
 #
 # Mirrors rammp::DriveCommand in rammp-org/rammp-rtps (messages/joystick_message.hpp),
 # field for field and in wire order; not the source of truth. Do not reorder, insert
