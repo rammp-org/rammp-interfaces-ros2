@@ -10,8 +10,11 @@
 #   AUTONOMOUS  any           AUTONOMOUS
 #   SHARED      any           SHARED
 #
-# The MIB decides: it accepts AUTONOMOUS and SHARED from IDLE, ENABLED and PUSH_ASSIST,
-# and nothing from INITIALIZING, ESTOP or ERROR. Send it on change. MibStatus.system_state
+# The MIB decides. It accepts ENABLE from IDLE and ENABLED (a profile change while
+# driving), AUTONOMOUS and SHARED from IDLE, ENABLED and PUSH_ASSIST, and nothing from
+# INITIALIZING, ESTOP or ERROR. AUTONOMOUS, SHARED and PUSH_ASSIST each have their own
+# ways out (a joystick touch ends AUTONOMOUS; DISABLE ends all three), so ENABLE is
+# refused there: leave first, then enable. Send it on change. MibStatus.system_state
 # is the answer: a request the MIB has not answered yet may be repeated (the link is
 # best-effort), and once MibStatus has shown the requested state the request is done. A
 # later change of state is the MIB's decision, not a lost packet, so ask again only on a
