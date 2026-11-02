@@ -100,6 +100,14 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **2.0.0**, 2026-11-02: `EStop` now mirrors `rammp::EStop` in `rammp-rtps`
+  field for field. `bool engaged` becomes `uint8 state` with
+  `STATE_NOT_ENGAGED`/`STATE_ENGAGED` constants (same byte values on the wire),
+  and `pub_seq`, `clear_target` and `clear_pub_seq` are appended for the
+  heartbeat / clear-attempt protocol. Major because a field is renamed and
+  retyped, and because the semantics change: a `NOT_ENGAGED` message is a
+  heartbeat, not a clear; only a clear attempt from the clearer (the MIB) ends a
+  stop. Every consumer of `/estop` must adopt it.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a
@@ -139,4 +147,5 @@ reading pins, without running anything.
 Some types are compatible with the robot's RTPS messages. The embedded boards
 publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
 corresponding types here are kept in step with `rammp-org/rammp-rtps` so a ROS
-node reads the boards' own packets with no bridge in between.
+node reads the boards' own packets with no bridge in between. `EStop` is one of
+them: its field list and semantics follow `rammp::EStop` there.
