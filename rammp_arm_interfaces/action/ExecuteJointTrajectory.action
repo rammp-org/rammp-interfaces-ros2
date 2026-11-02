@@ -19,7 +19,7 @@ uint8[16] token             # arbitration capability from /acquire_control; zero
 float64 speed_scale 1.0
 ---
 # ---------- Result ----------
-int32   error_code          # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4, GOAL_TOLERANCE_VIOLATED=-5, PREEMPTED=-6, NOT_AUTHORIZED=-8, HALTED=-9
+int32   error_code          # SUCCESSFUL=0, INVALID_GOAL=-1, PATH_TOLERANCE_VIOLATED=-4, GOAL_TOLERANCE_VIOLATED=-5, PREEMPTED=-6, NOT_AUTHORIZED=-8, HALTED=-9, CONTACT_STOP=-11
 string  error_string
 trajectory_msgs/JointTrajectoryPoint final_error
 ---

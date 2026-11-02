@@ -194,6 +194,24 @@ Every package carries the repo's one version.
   Not a version bump beyond what's already pre-release here -- no tag of
   this package has ever shipped.
 
+- **Unreleased** (`SwapnilPande/observer-wrench`): `EeState`'s header comment
+  says which external-torque estimate the driver's wrench comes from when: the
+  contact observer while it runs and has settled, the quasi-static `g(q) − τ`
+  otherwise (kinova-gen3-driver#112). Patch: comments only.
+- **Unreleased** (`SwapnilPande/contact-detection`): new arm service
+  `SetContactThresholds` (token-gated; `PROFILE_DEFAULT`, `_SENSITIVE`, `_LOOSE`
+  or `_CUSTOM` with 7 per-joint values, N·m). New result code
+  `CONTACT_STOP=-11`, documented on every arm action's `error_code` and on
+  `OpenStream`'s: the arm stopped on unexpected contact and needs
+  `/clear_faults`. Minor: a new type, and comment-only changes elsewhere.
+- **Unreleased** (`SwapnilPande/go-to-many`): new arm actions `GoToEEPoses` and
+  `GoToJointConfigs`, `GoToEEPose` / `GoToJointConfig` through several targets in
+  one motion, and their target messages `EEPoseTarget` (pose, speed scale,
+  orientation hold, blend radius) and `JointConfigTarget` (joints, speed scale,
+  blend radius). The legs are blended by RAMMP-CuRobo's `/rammp_curobo/blend`.
+  Result and feedback are the single-target actions'. Minor: new messages and
+  actions only. The two target messages are array elements inside a goal, so a
+  field added to either LATER is a MAJOR change (see their header comments).
 - **Unreleased** (`SwapnilPande/move-shareable-message-types-to-rammp_control_in`):
   new base messages `TwistSetpoint` (body frame) and `PoseSetpoint` (odom
   frame), each carrying the arbitration token. Same shape as the arm's
