@@ -4,8 +4,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/MibState.msg"
+  "msg/MibStatus.msg"
   "msg/SeatState.msg"
+  "msg/DriveCommand.msg"
   "msg/TwistSetpoint.msg"
   "msg/PoseSetpoint.msg"
   DEPENDENCIES geometry_msgs)
