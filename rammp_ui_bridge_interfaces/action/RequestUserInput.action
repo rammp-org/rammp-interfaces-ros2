@@ -19,18 +19,17 @@
 # ~/request_user_input/update to change the displayed message/candidate
 # list/highlighted selection) without the goal ending. Each tap is
 # reported as feedback instead. The goal only completes when the user
-# presses a button (status "button") or the engine cancels (status
-# "cancelled") -- by that point the engine is expected to already know
-# (from the feedback stream) which object, if any, is selected, and the
-# pressed button_id tells it what to do with that selection.
+# presses a button (status "button"), the engine cancels (status
+# "cancelled"), or the bridge is forced to end it early (status
+# "aborted", see result_json below) -- by that point the engine is
+# expected to already know (from the feedback stream) which object, if
+# any, is selected, and the pressed button_id tells it what to do with
+# that selection.
 #
-# `panel_json`/`objects`/`selected_instance_id` were previously three
-# separate typed fields (one of them a ROS message array,
-# `ObjectCandidate[]`). They are now folded into one `request_json` JSON
-# string (see rammp-UI-bridge docs/INTERACTION_PANEL_SCHEMA.md) so every
-# field on this goal lives in one place, mirroring how `panel_json` itself
-# is already a JSON string. `ObjectCandidate.msg` is retired along with
-# this (no longer referenced by any interface).
+# `panel_json`/`objects`/`selected_instance_id` all travel inside one
+# `request_json` JSON string (see rammp-UI-bridge
+# docs/INTERACTION_PANEL_SCHEMA.md for the exact shape of each) so every
+# field on this goal lives in one place.
 
 string engine_id          # the calling engine's own id (its CapabilityManifest.engine_id) --
                           # lets the bridge tag any pushed `objects` with this engine's own
@@ -43,7 +42,11 @@ string request_json
 #                                 # (title/message/buttons/progress/style, see
 #                                 # rammp-UI-bridge docs/INTERACTION_PANEL_SCHEMA.md) the
 #                                 # engine wants shown; omitted/"" if this request is
-#                                 # object-only
+#                                 # object-only (e.g. an always-open browse/idle session
+#                                 # that starts with nothing selected -- see
+#                                 # OrchestratorNode._build_idle_panel -- and only grows
+#                                 # buttons once ~/request_user_input/update adds them
+#                                 # after an object tap)
 #     "objects": [                # optional, default [] -- candidate objects the user can
 #                                 # tap on this engine's own overlay stream; omitted/[] if
 #                                 # this request is panel-only
@@ -54,12 +57,24 @@ string request_json
 #                                 # show as already highlighted/selected when the goal
 #                                 # starts; omitted/"" for no initial selection
 #   }
-# At least one of panel_json / objects must be non-empty.
+# At least one of panel_json / objects must be non-empty. A request with
+# neither buttons nor objects would have no way to ever end except an
+# engine cancel/bridge abort -- by design this is only safe for a caller
+# that keeps the goal open indefinitely and reshapes it in place via
+# ~/request_user_input/update as the situation changes (see
+# OrchestratorNode's always-open browse session), not for a one-shot
+# "ask and wait" use from an engine, which should always include buttons.
 ---
 string result_json
 # JSON object:
 #   {"status": "button", "button_id": str}   # user pressed one of panel_json's buttons
 #   {"status": "cancelled"}                  # engine cancelled the goal before that happened
+#   {"status": "aborted", "reason": str}     # the bridge ended the goal without a button
+#                                             # press or engine cancel -- e.g. ui_control was
+#                                             # reclaimed by another owner (the Orchestrator or
+#                                             # a different engine) before this engine's goal
+#                                             # finished on its own; `reason` is a short
+#                                             # human-readable explanation
 ---
 string feedback_json
 # Sent once per object tap while the goal is still active (never after

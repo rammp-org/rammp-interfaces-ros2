@@ -145,11 +145,22 @@ runtime can tell, and these rules can relax.
 Every package carries the repo's one version.
 
 - **Unreleased** (`feat/UI-bridge-interface`): new package
-  `rammp_ui_bridge_interfaces` (`RequestUserInput`) --
-  the contract an active engine uses to ask the UI bridge directly for
-  user input (a button choice, an object tap on the engine's own overlay
-  camera stream, or both), bypassing the Orchestrator entirely. Minor:
-  new package only. `rammp_orchestrator_interfaces/ObjectRecord` appends
+  `rammp_ui_bridge_interfaces` (`RequestUserInput` action,
+  `UpdateUserInputPanel` service) -- the contract an active engine uses to
+  ask the UI bridge directly for user input (a button choice, an object
+  tap on the engine's own overlay camera stream, or both), bypassing the
+  Orchestrator entirely. `RequestUserInput`'s goal/result/feedback each
+  carry one `request_json`/`result_json`/`feedback_json` JSON-object
+  string (see `rammp-UI-bridge` `docs/INTERACTION_PANEL_SCHEMA.md` for the
+  exact shape of each): the goal's `token` is checked against the
+  bridge's own `~/ui_control/acquire_control` arbitration grant (same
+  protocol as `rammp_common_interfaces/AcquireControl`); an object tap
+  never completes the goal by itself -- it's reported via feedback so the
+  engine can react to repeated taps -- only a button press, an engine
+  cancel, or a bridge-forced abort ends it. `UpdateUserInputPanel` lets
+  the engine holding an active `RequestUserInput` goal update the
+  displayed panel/candidate list/highlighted selection without completing
+  or restarting it. `rammp_orchestrator_interfaces/ObjectRecord` appends
   `box` (`float32[4]`, all-zero default) and `stream_id` (`string`,
   empty default) so the UI bridge can read pixel-space bounding boxes
   from `GetDetectedObjects` without its own Perception subscription --
@@ -166,33 +177,8 @@ Every package carries the repo's one version.
   against the bridge's own arbitration server for this resource -- same
   token-gating convention as `rammp_arm_interfaces/JointSetpoint` and
   `rammp_base_interfaces/TwistSetpoint`, just for a bridge-owned
-  resource rather than a piece of hardware. Minor: new message only.
-  `RequestUserInput`'s goal gained `token` (checked against that same
-  bridge-owned arbitration grant) and `selected_instance_id` (optional
-  initial highlight); its result dropped `STATUS_OBJECT`/`instance_id` --
-  an object tap no longer completes the goal, it's reported via a new
-  feedback message (`event_type`/`instance_id`) instead, so the engine
-  can react to repeated taps without the goal ending. New service
-  `UpdateUserInputPanel` lets the engine holding an active
-  `RequestUserInput` goal update the displayed panel/candidate
-  list/highlighted selection without completing or restarting it.
-  Minor: `RequestUserInput`'s goal/result/feedback and the new service
-  are all pre-release changes on this same unreleased branch, not a
-  break to anything already shipped.
-  **Further revised, still on the same unreleased branch:** `RequestUserInput`'s
-  goal (`panel_json`/`objects`/`selected_instance_id`), result
-  (`status`/`button_id`), and feedback (`event_type`/`instance_id`) each
-  collapse into a single `request_json`/`result_json`/`feedback_json`
-  string field (JSON object, see `rammp-UI-bridge`
-  `docs/INTERACTION_PANEL_SCHEMA.md` for the exact shape of each) --
-  `ObjectCandidate.msg` is retired, since `objects[]` now travels as
-  plain JSON inside `request_json`/the `UpdateUserInputPanel` request
-  rather than a typed ROS message array. `UpdateUserInputPanel`'s
-  request collapses the same way: the three
-  `update_panel`/`update_objects`/`update_selected` bool flags are gone,
-  replaced by "key present in `request_json` means update this aspect."
-  Not a version bump beyond what's already pre-release here -- no tag of
-  this package has ever shipped.
+  resource rather than a piece of hardware. Minor: new package only --
+  no tag of it has ever shipped.
 
 - **Unreleased** (`SwapnilPande/observer-wrench`): `EeState`'s header comment
   says which external-torque estimate the driver's wrench comes from when: the

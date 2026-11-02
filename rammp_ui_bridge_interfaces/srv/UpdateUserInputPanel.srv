@@ -1,4 +1,5 @@
-# Lets the engine that currently owns an active RequestUserInput goal
+# Served by the UI bridge at ~/request_user_input/update. Lets the engine
+# that currently owns an active RequestUserInput goal
 # (rammp_ui_bridge_interfaces/action/RequestUserInput.action) change what's
 # displayed to the user -- a new message/buttons, an updated candidate
 # object list, and/or which object is currently highlighted as selected --
@@ -13,13 +14,10 @@
 # ~/ui_control/acquire_control, same resource RequestUserInput's own
 # token is checked against).
 #
-# `update_panel`/`panel_json`/`update_objects`/`objects`/`update_selected`/
-# `selected_instance_id` were previously three independent (bool flag,
-# value) pairs. They are now folded into one `request_json` JSON string
-# (same shape as RequestUserInput.Goal's `request_json`, see
-# rammp-UI-bridge docs/INTERACTION_PANEL_SCHEMA.md): presence of a key
-# means "replace this aspect", and a key's absence means "leave it
-# unchanged" -- there is no longer a separate bool alongside each value.
+# `request_json` has the same shape as RequestUserInput.Goal's
+# `request_json` (see rammp-UI-bridge docs/INTERACTION_PANEL_SCHEMA.md),
+# except every key is optional here: presence of a key means "replace this
+# aspect", and a key's absence means "leave it unchanged".
 
 uint8[16] token
 string request_json
