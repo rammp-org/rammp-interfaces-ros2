@@ -27,6 +27,10 @@
 #
 # The stamp is for the log only. Staleness is judged by receive time on the
 # receiver's own clock, never by the stamp, which depends on clock sync.
+#
+# Sent best-effort, every 100 ms per node: the period resend is the reliability,
+# and silence is fail-safe (deadman). Subscribe best_effort, or a firmware
+# publisher never matches your subscription.
 
 # `state` is one octet on the wire. A receiver treats any value other than
 # STATE_NOT_ENGAGED as STATE_ENGAGED: the fail-safe reading.
