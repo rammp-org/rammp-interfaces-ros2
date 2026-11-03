@@ -9,7 +9,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
 | `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
-| `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
+| `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration (object-bound or system-level, e.g. error recovery), object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 | `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
 | `rammp_ui_bridge_interfaces` | the contract an active capability engine uses to ask the UI bridge directly for user input -- a button choice, an object tap on the engine's own overlay camera stream, or both -- bypassing the Orchestrator entirely |
 
@@ -143,6 +143,19 @@ runtime can tell, and these rules can relax.
 ### Version history
 
 Every package carries the repo's one version.
+
+- **Unreleased** (`feat/system_engine_registration`): `rammp_orchestrator_interfaces`
+  gains `SystemCapabilityManifest` (`msg`) and `RegisterSystemEngine` (`srv`) for a
+  capability engine that is **not bound to any perceived object** (e.g. an arm-error
+  recovery handler) -- deliberately a separate, smaller type from
+  `CapabilityManifest`/`RegisterEngine` rather than a variant of either, so neither
+  existing type nor any engine already using them changes at all.
+  `SystemCapabilityManifest` carries `engine_id`, `display_name`,
+  `recovers_domains` (error domains it can recover, e.g. `"arm"`, matched against a
+  per-domain error state the Orchestrator's World State will carry) and
+  `required_resources` (arbitrated through the same `ResourceManager` object-bound
+  engines use). Minor: two brand-new types only, no change to any existing message,
+  service or action.
 
 - **Unreleased** (`feat/UI-bridge-interface`): new package
   `rammp_ui_bridge_interfaces` (`RequestUserInput` action,
