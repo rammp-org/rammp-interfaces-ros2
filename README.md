@@ -193,6 +193,9 @@ Every package carries the repo's one version.
   MIB publishes and reads these as raw RTPS under the ROS 2 type names, so the
   `.msg` files mirror the rtps structs and say so. **MAJOR**: a message is removed.
   For rammp-org/RAMMP-mib-fw#53 and #24 here.
+- **Unreleased** (`ewang360/push-assist-stick-exit`): `DriveCommand` and `MibStatus`
+  say that a joystick touch ends `PUSH_ASSIST` as it ends `AUTONOMOUS` (decided
+  2026-11-03, rammp-org/rammp-rtps#24). Comment only. Patch.
 - **Unreleased** (`SwapnilPande/observer-wrench`): `EeState`'s header comment
   says which external-torque estimate the driver's wrench comes from when: the
   contact observer while it runs and has settled, the quasi-static `g(q) − τ`
