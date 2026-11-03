@@ -139,4 +139,5 @@ reading pins, without running anything.
 Some types are compatible with the robot's RTPS messages. The embedded boards
 publish raw RTPS (XCDR1 — the same encoding ROS 2 speaks), and the
 corresponding types here are kept in step with `rammp-org/rammp-rtps` so a ROS
-node reads the boards' own packets with no bridge in between.
+node reads the boards' own packets with no bridge in between. `EStop` is one of
+them: its field list and semantics follow `rammp::EStop` there.
