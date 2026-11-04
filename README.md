@@ -269,6 +269,12 @@ Every package carries the repo's one version.
   two new packages but was never tagged; this release subsumes it.)
 - **1.0.0**, 2026-09-10: first tag.
 
+### Branches
+
+`dev` is the default branch, and every feature PR targets it. `main` takes only
+the release PR from `dev`, so `dev` is always `main` plus newer work. A ruleset
+on `main` enforces this (the `source-is-dev` check).
+
 ### Release order
 
 These packages depend on nothing, so they always release first. Tag here, then
