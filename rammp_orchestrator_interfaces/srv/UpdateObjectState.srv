@@ -1,0 +1,15 @@
+# Called by a *remote* engine node, from within its own ExecuteAction
+# action callback, once a scripted action completes, to merge a
+# perception-observable fact the engine just caused (e.g. "I just opened
+# this door") onto the selected instance's ObjectRecord in the
+# Orchestrator's shared World State. Distinct from WriteWorldState.srv,
+# which is for engine-owned facts with no perception angle at all (gripper
+# contents, base pose). Mirrors WorldStateStore.update_object()'s
+# dataclasses.replace merge semantics.
+
+string instance_id
+string fields_json
+---
+bool success
+int32 new_version
+string message

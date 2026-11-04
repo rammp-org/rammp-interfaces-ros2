@@ -1,0 +1,8 @@
+# Called by an engine (built-in mock or a real/third-party one) once, at
+# startup, to join the capability registry. No orchestrator code change is
+# needed to support a new engine -- it just calls this with its manifest.
+
+rammp_orchestrator_interfaces/CapabilityManifest manifest
+---
+bool accepted
+string message

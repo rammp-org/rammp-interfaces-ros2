@@ -8,7 +8,10 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
 | `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
-| `rammp_base_interfaces` | observing the mobile base: the MIB's status and seat state |
+| `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
+| `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
+| `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
+| `rammp_ui_bridge_interfaces` | the contract an active capability engine uses to ask the UI bridge directly for user input -- a button choice, an object tap on the engine's own overlay camera stream, or both -- bypassing the Orchestrator entirely |
 
 ### Where the line between them is
 
@@ -28,6 +31,47 @@ vocabulary. Trajectory following is the same — it is tuned to arm control mode
 Both stay in `rammp_arm_interfaces` until a second subsystem exists to show what,
 if anything, they genuinely share. Guessing at that shape before there is a
 consumer is how you ship a contract you cannot honour.
+
+`rammp_orchestrator_interfaces` also passes the test, by a different route: its
+types (`CapabilityManifest`, `ActionSpec`, `Intent`, `Progress`, `Result`, ...)
+describe how the Orchestrator and an engine talk to each other, and that
+conversation is identical whether the engine behind it drives an arm, a base, or
+a microwave. The contract is complete without knowing what is being controlled —
+it is, in fact, specifically the layer that lets the Orchestrator not know.
+
+`rammp_ui_bridge_interfaces` is the same test applied to a different pair: its
+one action (`RequestUserInput`) and one service (`UpdateUserInputPanel`)
+describe how an active engine and the UI bridge talk to each other while
+soliciting mid-task user input, and the Orchestrator is deliberately not a
+party to that conversation at all — the UI bridge serves both, any engine
+may call them, and nothing about the contract depends on which engine or
+which capability is running. Keeping it out of `rammp_orchestrator_interfaces`
+keeps that package's own contract honest: the Orchestrator genuinely has no
+field, service, or type involved in this exchange to point to. Both
+`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel` reuse
+`rammp_common_interfaces`'s token field directly (not by depending on that
+package's types — the field is just `uint8[16] token`, same convention as
+the arm/base setpoints) because they share the identical problem a hardware
+resource does: more than one engine *could* call in, and only whoever
+currently holds the bridge's own arbitration grant (`~/ui_control/*`, one
+shared grant covering both the overlay topic and these two calls, since
+both represent the one currently-active engine's exclusive right to talk to
+the UI) should actually be heard. `RequestUserInput`'s goal intentionally
+does *not* complete when the user taps a candidate object -- only a button
+press or the engine's own cancel ends the goal -- because a tap is reported
+as feedback instead, letting the engine react (e.g. call
+`UpdateUserInputPanel` to reflect the new selection) without losing its
+place in a possibly-repeated tap/re-tap sequence.
+
+Setpoints are kept per subsystem. The arm's and the base's `TwistSetpoint` and
+`PoseSetpoint` share a shape (a `geometry_msgs` payload plus a token) but are
+separate types: the payload's frame and meaningful components are specific to each
+subsystem and expected to diverge, and a shared type would make every base-only
+change a major bump for the arm. The part they do share, the token protocol,
+lives here. Locomanipulation follows the same rule: a whole-body controller is its
+own contract (an end-effector target in a world frame), not a merge of the two
+setpoints, and the shared piece it needs is atomic arbitration over the arm and
+the base together.
 
 ## Everything shared lives here
 
@@ -100,6 +144,119 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **2.0.0**, 2026-11-03. **MAJOR**: in `rammp_arm_interfaces` one field is
+  retyped in place, one message is renamed, and the Cartesian fields change
+  frame; `rammp_base_interfaces` replaces one message. Everything else is
+  additive.
+  (An in-tree 1.2.0 of 2026-10-09 carried `rammp_orchestrator_interfaces` but
+  was never tagged; this release subsumes it.)
+
+  **What breaks, and what a client does about it:**
+  - `ExecuteJointTrajectory`'s goal **retypes `gains`** from
+    `JointImpedanceGains` to `ImpedanceGains` in place (#9). An old client's
+    bytes land in the wrong fields with no error, so every node that sends or
+    serves this action moves to 2.0.0 together. Leave `gains` at its default
+    (`PROFILE_SESSION_DEFAULT`) for the session default, name a profile
+    (`PROFILE_SOFT` / `_MEDIUM` / `_STIFF`), or set `PROFILE_CUSTOM` and fill
+    `custom`.
+  - **`JointImpedanceGains` is renamed `JointImpedanceGainValues`** (#9). It
+    now appears only as `ImpedanceGains.custom`. Code that imports the old name
+    no longer compiles; switch the import.
+  - **Cartesian arm fields are in `arm_mount`, not `base_link`** (#14).
+    `GoToEEPose` requires `target.header.frame_id: arm_mount` and refuses
+    `base_link`. `PoseSetpoint`, `TwistSetpoint` and the new `EEPoseTarget`
+    are in `arm_mount` (Z against gravity when the chair is level, origin at
+    `arm_base_link`), and `EeState` is expressed in `arm_mount` orientation. No field changes here, only the frame
+    the numbers mean. On a level mount (dojo) the numbers are the same; on
+    flatbot and gen_1_5 they change by the 30° tilt, so re-record saved poses.
+  - **`rammp_base_interfaces` replaces `MibState` with `MibStatus`** (#27).
+    `MibState` is gone; subscribe to `MibStatus` instead. It is a
+    field-for-field mirror of the MIB's own status struct (rammp-org/rammp-rtps
+    `messages/mib_message.hpp`) and carries all eight MIB states as
+    `SYSTEM_STATE_*` constants, where `MibState` collapsed them to four and lost
+    `ESTOP`, `ERROR` and the autonomy states. `SeatState` no longer has its own
+    topic: the seat pose arrives inside `MibStatus`.
+  - `EeState` appends `geometry_msgs/Wrench wrench` (#13). Appended at the end,
+    so it is safe on the wire, but a nested message cannot carry a default: an
+    old driver's `EeState` reads as a zero wrench, not a missing one.
+
+  **`rammp_arm_interfaces`, additive:**
+  - **Compliance on every motion surface** (#9). New `ImpedanceGains` (a
+    named profile or custom gains) and token-gated `SetGains`, which re-points
+    the session default. `GoToEEPose`, `GoToJointConfig` and `GoToPreset`
+    append `control_mode` (`CONTROL_MODE_POSITION` = 0, the default, or
+    `CONTROL_MODE_IMPEDANCE`) and `ImpedanceGains gains`. `OpenStream`'s request
+    appends `gains`, applied at open. The defaults mean today's behaviour, and
+    a non-default `gains` where it cannot act is refused, not ignored.
+  - **Several targets in one motion** (#21). New actions `GoToEEPoses` and
+    `GoToJointConfigs`, and their target messages `EEPoseTarget` (pose, speed
+    scale, orientation hold, blend radius) and `JointConfigTarget` (joints,
+    speed scale, blend radius). Result and feedback are the single-target
+    actions'. The legs are blended by RAMMP-CuRobo's `/rammp_curobo/blend`.
+    The two target messages are array elements inside a goal, so **a field
+    added to either later is a MAJOR change**, appended or not (see their
+    header comments).
+  - **Contact detection** (#23). New token-gated `SetContactThresholds`
+    (`PROFILE_DEFAULT`, `_SENSITIVE`, `_LOOSE`, or `_CUSTOM` with 7 per-joint
+    values in N·m; it answers with the profile and thresholds now active). New
+    result code `CONTACT_STOP = -11`, documented on every arm action's
+    `error_code` and on `OpenStream`'s: the arm stopped on unexpected contact
+    and needs `/clear_faults`.
+  - `EeState`'s header comment says which estimate the wrench is: the
+    driver's contact observer while it runs and has settled, the quasi-static
+    `g(q) − τ` otherwise (#25, kinova-gen3-driver#112). Comment only.
+
+  **`rammp_common_interfaces`:** `AcquireControl`'s request appends an
+  optional pre-generated `uint8[16] token` (#19), so an orchestrator can use
+  one key across several resources. All-zero, the default, means "mint one",
+  as before.
+
+  **`rammp_base_interfaces`:**
+  - New `TwistSetpoint` (body frame) and `PoseSetpoint` (odom frame), each
+    carrying the arbitration token (#18). Same shape as the arm's setpoints but
+    separate types; see "Where the line between them is" above.
+  - New `DriveCommand` (#27): the Jetson sends it to put the MIB in
+    `AUTONOMOUS` or `SHARED`, and the joystick sends it for `ENABLE`, `DISABLE`
+    and push assist. The outcome is read in `MibStatus.system_state`. No token:
+    nothing a `DriveCommand` does moves the chair by itself.
+  - `SeatState` documents its units (degrees, millimetres) (#27).
+  - The MIB publishes and reads `MibStatus` and `DriveCommand` as raw RTPS
+    under the ROS 2 type names, with no bridge. These `.msg` files mirror the
+    rtps structs and are not the source of truth: field order is wire order, so
+    never reorder, insert or retype.
+
+  **New package `rammp_orchestrator_interfaces`** (#10): the
+  Orchestrator/engine contract. Messages `CapabilityManifest`, `ActionSpec`,
+  `ActionAvailability`, `EngineActivation`, `Intent`, `ObjectRecord`,
+  `Progress`, `Result`; services `Activate`, `Control`, `Deselect`,
+  `GetDetectedObjects`, `GetWorldState`, `Hibernate`, `RegisterEngine`,
+  `RequestIntent`, `SelectObject`, `UpdateObjectState`, `WriteWorldState`;
+  action `ExecuteAction`. `ObjectRecord` carries `box` (`float32[4]`, pixel
+  bounding box) and `stream_id` (#20), so the UI bridge reads boxes from
+  `GetDetectedObjects` without its own Perception subscription.
+
+  **New package `rammp_ui_bridge_interfaces`** (#20): how an active engine asks
+  the UI bridge directly for user input (a button choice, an object tap on the
+  engine's overlay camera stream, or both), with the Orchestrator not involved.
+  Action `RequestUserInput`, service `UpdateUserInputPanel`, message
+  `EngineOverlayImage` (`sensor_msgs/Image` plus a token, the type of the shared
+  overlay-camera topic). Goal, result and feedback each carry one JSON-object
+  string (schema: rammp-UI-bridge `docs/INTERACTION_PANEL_SCHEMA.md`). All three
+  are gated by the bridge's own `~/ui_control/acquire_control` grant, the same
+  protocol as `AcquireControl`. A tap is reported as feedback and never ends the
+  goal; only a button press, the engine's cancel or a bridge abort does.
+
+  **New package `rammp_perception_interfaces`** (#12, #16): `DetectedObject`
+  (with `size`, the 3D box extent around `pose`), `ObjectDetections`,
+  `TrackingStatus`; `Detect`, `StartTracking`, `RenewTracking`,
+  `StopTracking`. `ObjectDetections` is the one detection message every
+  perception node publishes, whichever model is behind it; the Orchestrator
+  reads it and keeps `ObjectRecord` as its World State record. Masks travel as
+  one mono16 label image per frame, pixel value = `mask_id`. A tracking session
+  may hold a lease like `OpenStream`, so a crashed client cannot leave the GPU
+  busy. `ObjectDetections` first landed in `rammp_orchestrator_interfaces`
+  (#10) and moved here (#12) before any tag, so only builds from `dev` need to
+  switch the import.
 - **1.1.0**, 2026-10-02: new packages `rammp_base_interfaces` (`MibState`,
   `SeatState`) and `rammp_peripheral_interfaces` (`XYTwist`); new goal fields
   `speed_scale` (all four arm actions) and `orientation_hold` (`GoToEEPose`, a
@@ -127,7 +284,7 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v1.1.0
+  version: v2.0.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules

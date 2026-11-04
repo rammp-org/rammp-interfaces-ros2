@@ -1,0 +1,6 @@
+# Lets a UI (mock or real) ask the Orchestrator what object instances are
+# currently detected/visible, to decide what's selectable via SelectObject --
+# without needing its own separate subscription to perception.
+
+---
+ObjectRecord[] objects

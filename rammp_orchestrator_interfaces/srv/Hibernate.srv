@@ -1,0 +1,5 @@
+# Called by the Orchestrator on a remote engine when it's done being
+# interacted with (deselected, or after a non-sticky action completes).
+
+---
+bool success

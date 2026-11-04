@@ -1,0 +1,12 @@
+# Runs Orchestrator.select_action(engine_id, action_id, params) to
+# completion, streaming Progress as feedback and Intent-delegation
+# transitions implicitly (the node still forwards delegate progress on this
+# same feedback channel, tagged via Progress.phase/message).
+
+string engine_id
+string action_id
+string params_json
+---
+rammp_orchestrator_interfaces/Result result
+---
+rammp_orchestrator_interfaces/Progress progress

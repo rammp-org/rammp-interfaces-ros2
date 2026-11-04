@@ -1,0 +1,6 @@
+# User taps elsewhere / back / timeout -> hibernate all activated engines,
+# return to Browse mode.
+
+---
+bool success
+string message

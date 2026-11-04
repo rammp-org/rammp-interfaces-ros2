@@ -1,0 +1,4 @@
+uint32 session_id     # 0 stops whatever session is open
+---
+bool   stopped
+string message
