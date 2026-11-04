@@ -146,7 +146,8 @@ Every package carries the repo's one version.
 
 - **2.0.0**, 2026-11-03. **MAJOR**: in `rammp_arm_interfaces` one field is
   retyped in place, one message is renamed, and the Cartesian fields change
-  frame; `rammp_base_interfaces` replaces one message. Everything else is
+  frame; `rammp_base_interfaces` replaces one message; `rammp_common_interfaces`
+  renames and retypes one field of `EStop`. Everything else is
   additive.
   (An in-tree 1.2.0 of 2026-10-09 carried `rammp_orchestrator_interfaces` but
   was never tagged; this release subsumes it.)
@@ -176,6 +177,14 @@ Every package carries the repo's one version.
     `SYSTEM_STATE_*` constants, where `MibState` collapsed them to four and lost
     `ESTOP`, `ERROR` and the autonomy states. `SeatState` no longer has its own
     topic: the seat pose arrives inside `MibStatus`.
+  - **`rammp_common_interfaces/EStop` mirrors rammp-rtps's `rammp::EStop`**
+    (#30). `bool engaged` is renamed and retyped `uint8 state`
+    (`STATE_NOT_ENGAGED = 0`, `STATE_ENGAGED = 1`, the same byte values on the
+    wire), and `pub_seq`, `clear_target` and `clear_pub_seq` are appended. The
+    meaning changes too: a `NOT_ENGAGED` message is a heartbeat, not a clear;
+    only a clear attempt (`clear_target` set) from the clearer, the MIB, ends a
+    stop. Every `/estop` publisher and subscriber moves to the new fields and
+    rules (kinova-gen3-ros2 2.0.0 does).
   - `EeState` appends `geometry_msgs/Wrench wrench` (#13). Appended at the end,
     so it is safe on the wire, but a nested message cannot carry a default: an
     old driver's `EeState` reads as a zero wrench, not a missing one.
