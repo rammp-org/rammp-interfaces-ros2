@@ -1,0 +1,10 @@
+# Called by a system-level capability engine (e.g. an arm-error recovery
+# handler) once, at startup, to join the Orchestrator's error-recovery
+# registry. Separate from RegisterEngine/CapabilityManifest since a system
+# engine is not bound to any perceived object -- see
+# SystemCapabilityManifest's own header comment for why.
+
+rammp_orchestrator_interfaces/SystemCapabilityManifest manifest
+---
+bool accepted
+string message
