@@ -40,21 +40,23 @@ a microwave. The contract is complete without knowing what is being controlled �
 it is, in fact, specifically the layer that lets the Orchestrator not know.
 
 `rammp_ui_bridge_interfaces` is the same test applied to a different pair: its
-one action (`RequestUserInput`) and one service (`UpdateUserInputPanel`)
-describe how an active engine and the UI bridge talk to each other while
-soliciting mid-task user input, and the Orchestrator is deliberately not a
+actions/services (`RequestUserInput`, `UpdateUserInputPanel`,
+`SetEngineOverlayVisible`) describe how an active engine and the UI bridge talk
+to each other while soliciting mid-task user input or toggling the engine's
+own camera overlay, and the Orchestrator is deliberately not a
 party to that conversation at all — the UI bridge serves both, any engine
 may call them, and nothing about the contract depends on which engine or
 which capability is running. Keeping it out of `rammp_orchestrator_interfaces`
 keeps that package's own contract honest: the Orchestrator genuinely has no
 field, service, or type involved in this exchange to point to. Both
-`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel` reuse
+`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel`/
+`SetEngineOverlayVisible` reuse
 `rammp_common_interfaces`'s token field directly (not by depending on that
 package's types — the field is just `uint8[16] token`, same convention as
 the arm/base setpoints) because they share the identical problem a hardware
 resource does: more than one engine *could* call in, and only whoever
 currently holds the bridge's own arbitration grant (`~/ui_control/*`, one
-shared grant covering both the overlay topic and these two calls, since
+shared grant covering both the overlay topic and these three calls, since
 both represent the one currently-active engine's exclusive right to talk to
 the UI) should actually be heard. `RequestUserInput`'s goal intentionally
 does *not* complete when the user taps a candidate object -- only a button
@@ -192,6 +194,15 @@ Every package carries the repo's one version.
   `rammp_base_interfaces/TwistSetpoint`, just for a bridge-owned
   resource rather than a piece of hardware. Minor: new package only --
   no tag of it has ever shipped.
+  New service `SetEngineOverlayVisible` (`uint8[16] token`, `bool visible`
+  -> `bool accepted`, `string message`): a token-gated trigger for UE's
+  own parameterless `Open Camera Feed`/`Close Camera Feed` Remote Control
+  functions, letting whoever currently holds `~/ui_control` show/hide the
+  overlay widget/material in-engine -- independent of whether
+  `EngineOverlayImage` frames are flowing, which continue unconditionally.
+  Same `~/ui_control` token-arbitration grant as `RequestUserInput`/
+  `UpdateUserInputPanel`. Minor: new package only -- no tag of it has
+  ever shipped.
 
 - **Unreleased** (`ewang360/base-mib-status-and-drive-command`): `rammp_base_interfaces`
   **replaces `MibState` with `MibStatus`**, a field-for-field mirror of the MIB's own
