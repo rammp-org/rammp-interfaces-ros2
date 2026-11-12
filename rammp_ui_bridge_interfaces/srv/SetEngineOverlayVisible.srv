@@ -1,0 +1,23 @@
+# Served by the UI bridge at ~/engine_overlay/set_visible. Lets the engine
+# that currently holds ui_control (see rammp_common_interfaces/AcquireControl,
+# called against the bridge's own ~/ui_control/acquire_control arbitration
+# server) show or hide its overlay camera stream in UE without tearing down
+# the camera subscription/forwarding pipeline underneath -- e.g. to blank the
+# overlay during a transition between sub-steps, then resume showing frames
+# again without re-subscribing, reconnecting the RMSS stream, or losing any
+# other stream state.
+#
+# While hidden, incoming EngineOverlayImage frames are still accepted/
+# arbitrated normally (so the token stays "warm" and _latest_engine_overlay
+# stays current) -- they are simply not forwarded to UE's streaming server
+# until visible is set back to true.
+#
+# Refused (accepted=false) if `token` doesn't match the token currently
+# granted by ~/ui_control/acquire_control -- same check UpdateUserInputPanel
+# .srv and EngineOverlayImage's own token field use.
+
+uint8[16] token
+bool visible
+---
+bool accepted
+string message
