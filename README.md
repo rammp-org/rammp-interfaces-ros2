@@ -146,63 +146,27 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
-- **Unreleased** (`feat/system_engine_registration`): `rammp_orchestrator_interfaces`
-  gains `SystemCapabilityManifest` (`msg`) and `RegisterSystemEngine` (`srv`) for a
-  capability engine that is **not bound to any perceived object** (e.g. an arm-error
-  recovery handler) -- deliberately a separate, smaller type from
-  `CapabilityManifest`/`RegisterEngine` rather than a variant of either, so neither
-  existing type nor any engine already using them changes at all.
-  `SystemCapabilityManifest` carries `engine_id`, `display_name`,
-  `recovers_domains` (error domains it can recover, e.g. `"arm"`, matched against a
-  per-domain error state the Orchestrator's World State will carry) and
-  `required_resources` (arbitrated through the same `ResourceManager` object-bound
-  engines use). Minor: two brand-new types only, no change to any existing message,
-  service or action.
+- **2.1.0**, 2026-11-16. Minor: one field appended to an action goal, with a
+  default that means today's behaviour, and three new types. Nothing existing
+  changes.
+  - `rammp_orchestrator_interfaces/ExecuteAction`'s goal appends
+    `uint8[16] token` (#35): the execution's session-control token, which the
+    Orchestrator sends with the goal so the engine does not have to acquire one
+    itself. All zero means no token, which is what an older Orchestrator's goal
+    reads as. An engine that reads `goal.token` needs 2.1.0; one built against
+    2.0.0 ignores the field.
+  - `rammp_orchestrator_interfaces` gains `SystemCapabilityManifest` (`msg`) and
+    `RegisterSystemEngine` (`srv`) (#34), for a capability engine that is not
+    bound to a perceived object, such as an arm-error recovery handler. They are
+    separate from `CapabilityManifest`/`RegisterEngine`, so neither existing type
+    changes. The manifest carries `engine_id`, `display_name`, `recovers_domains`
+    (error domains it can recover, e.g. `"arm"`) and `required_resources`
+    (arbitrated by the same `ResourceManager` as object-bound engines).
+  - `rammp_ui_bridge_interfaces` gains `SetEngineOverlayVisible` (`srv`) (#34):
+    `uint8[16] token`, `bool visible` -> `bool accepted`, `string message`. The
+    engine holding `~/ui_control` shows or hides its overlay camera feed in UE.
+    It is a UE-side toggle only: `EngineOverlayImage` frames keep flowing.
 
-- **Unreleased** (`feat/UI-bridge-interface`): new package
-  `rammp_ui_bridge_interfaces` (`RequestUserInput` action,
-  `UpdateUserInputPanel` service) -- the contract an active engine uses to
-  ask the UI bridge directly for user input (a button choice, an object
-  tap on the engine's own overlay camera stream, or both), bypassing the
-  Orchestrator entirely. `RequestUserInput`'s goal/result/feedback each
-  carry one `request_json`/`result_json`/`feedback_json` JSON-object
-  string (see `rammp-UI-bridge` `docs/INTERACTION_PANEL_SCHEMA.md` for the
-  exact shape of each): the goal's `token` is checked against the
-  bridge's own `~/ui_control/acquire_control` arbitration grant (same
-  protocol as `rammp_common_interfaces/AcquireControl`); an object tap
-  never completes the goal by itself -- it's reported via feedback so the
-  engine can react to repeated taps -- only a button press, an engine
-  cancel, or a bridge-forced abort ends it. `UpdateUserInputPanel` lets
-  the engine holding an active `RequestUserInput` goal update the
-  displayed panel/candidate list/highlighted selection without completing
-  or restarting it. `rammp_orchestrator_interfaces/ObjectRecord` appends
-  `box` (`float32[4]`, all-zero default) and `stream_id` (`string`,
-  empty default) so the UI bridge can read pixel-space bounding boxes
-  from `GetDetectedObjects` without its own Perception subscription --
-  populated from whichever write path (Perception, or an engine's
-  `update_object_state`) last touched an instance. Minor: appended at
-  the end with defaults that mean "no box reported yet," so an older
-  client is unaffected under Cyclone DDS (see the policy above).
-  New message `EngineOverlayImage` (`sensor_msgs/Image image`,
-  `uint8[16] token`): the shared overlay-camera topic every engine
-  publishes its own camera to (NODE_INTERFACE.md §3.3.1) carries this
-  type instead of a plain `sensor_msgs/Image`, so the bridge can tell
-  which engine's frames are current. `token` is the arbitration
-  capability from `rammp_common_interfaces/AcquireControl`, called
-  against the bridge's own arbitration server for this resource -- same
-  token-gating convention as `rammp_arm_interfaces/JointSetpoint` and
-  `rammp_base_interfaces/TwistSetpoint`, just for a bridge-owned
-  resource rather than a piece of hardware. Minor: new package only --
-  no tag of it has ever shipped.
-  New service `SetEngineOverlayVisible` (`uint8[16] token`, `bool visible`
-  -> `bool accepted`, `string message`): a token-gated trigger for UE's
-  own parameterless `Open Camera Feed`/`Close Camera Feed` Remote Control
-  functions, letting whoever currently holds `~/ui_control` show/hide the
-  overlay widget/material in-engine -- independent of whether
-  `EngineOverlayImage` frames are flowing, which continue unconditionally.
-  Same `~/ui_control` token-arbitration grant as `RequestUserInput`/
-  `UpdateUserInputPanel`. Minor: new package only -- no tag of it has
-  ever shipped.
 - **2.0.0**, 2026-11-03. **MAJOR**: in `rammp_arm_interfaces` one field is
   retyped in place, one message is renamed, and the Cartesian fields change
   frame; `rammp_base_interfaces` replaces one message; `rammp_common_interfaces`
@@ -358,7 +322,7 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v2.0.0
+  version: v2.1.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules
