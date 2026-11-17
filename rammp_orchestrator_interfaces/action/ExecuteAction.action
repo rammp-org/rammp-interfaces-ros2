@@ -6,6 +6,16 @@
 string engine_id
 string action_id
 string params_json
+# This execution's shared session-control token (see
+# Orchestrator.on_execution_start()/_ExecutionContext.token), pushed to the
+# UI bridge and whatever hardware drivers this engine's manifest requires at
+# the same time this goal is sent. The engine reads it straight off this
+# goal to use for its own self.arm/ctx.* calls (e.g.
+# capability_engine.engine.CapabilityEngine._on_execute) instead of pulling
+# one reactively via a separate acquire_control/release_control round trip.
+# All-zero (16 zero bytes) means "no token" (e.g. a standalone/manual goal
+# sent with no Orchestrator in the loop).
+uint8[16] token
 ---
 rammp_orchestrator_interfaces/Result result
 ---

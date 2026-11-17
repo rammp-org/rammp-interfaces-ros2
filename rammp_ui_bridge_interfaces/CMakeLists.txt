@@ -9,5 +9,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/EngineOverlayImage.msg"
   "action/RequestUserInput.action"
   "srv/UpdateUserInputPanel.srv"
+  "srv/SetEngineOverlayVisible.srv"
   DEPENDENCIES action_msgs builtin_interfaces sensor_msgs)
 ament_package()

@@ -9,7 +9,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
 | `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
 | `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
-| `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration, object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
+| `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration (object-bound or system-level, e.g. error recovery), object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 | `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
 | `rammp_ui_bridge_interfaces` | the contract an active capability engine uses to ask the UI bridge directly for user input -- a button choice, an object tap on the engine's own overlay camera stream, or both -- bypassing the Orchestrator entirely |
 
@@ -40,21 +40,23 @@ a microwave. The contract is complete without knowing what is being controlled �
 it is, in fact, specifically the layer that lets the Orchestrator not know.
 
 `rammp_ui_bridge_interfaces` is the same test applied to a different pair: its
-one action (`RequestUserInput`) and one service (`UpdateUserInputPanel`)
-describe how an active engine and the UI bridge talk to each other while
-soliciting mid-task user input, and the Orchestrator is deliberately not a
+actions/services (`RequestUserInput`, `UpdateUserInputPanel`,
+`SetEngineOverlayVisible`) describe how an active engine and the UI bridge talk
+to each other while soliciting mid-task user input or toggling the engine's
+own camera overlay, and the Orchestrator is deliberately not a
 party to that conversation at all — the UI bridge serves both, any engine
 may call them, and nothing about the contract depends on which engine or
 which capability is running. Keeping it out of `rammp_orchestrator_interfaces`
 keeps that package's own contract honest: the Orchestrator genuinely has no
 field, service, or type involved in this exchange to point to. Both
-`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel` reuse
+`EngineOverlayImage` and `RequestUserInput`/`UpdateUserInputPanel`/
+`SetEngineOverlayVisible` reuse
 `rammp_common_interfaces`'s token field directly (not by depending on that
 package's types — the field is just `uint8[16] token`, same convention as
 the arm/base setpoints) because they share the identical problem a hardware
 resource does: more than one engine *could* call in, and only whoever
 currently holds the bridge's own arbitration grant (`~/ui_control/*`, one
-shared grant covering both the overlay topic and these two calls, since
+shared grant covering both the overlay topic and these three calls, since
 both represent the one currently-active engine's exclusive right to talk to
 the UI) should actually be heard. `RequestUserInput`'s goal intentionally
 does *not* complete when the user taps a candidate object -- only a button
@@ -144,9 +146,31 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
+- **2.1.0**, 2026-11-16. Minor: one field appended to an action goal, with a
+  default that means today's behaviour, and three new types. Nothing existing
+  changes.
+  - `rammp_orchestrator_interfaces/ExecuteAction`'s goal appends
+    `uint8[16] token` (#35): the execution's session-control token, which the
+    Orchestrator sends with the goal so the engine does not have to acquire one
+    itself. All zero means no token, which is what an older Orchestrator's goal
+    reads as. An engine that reads `goal.token` needs 2.1.0; one built against
+    2.0.0 ignores the field.
+  - `rammp_orchestrator_interfaces` gains `SystemCapabilityManifest` (`msg`) and
+    `RegisterSystemEngine` (`srv`) (#34), for a capability engine that is not
+    bound to a perceived object, such as an arm-error recovery handler. They are
+    separate from `CapabilityManifest`/`RegisterEngine`, so neither existing type
+    changes. The manifest carries `engine_id`, `display_name`, `recovers_domains`
+    (error domains it can recover, e.g. `"arm"`) and `required_resources`
+    (arbitrated by the same `ResourceManager` as object-bound engines).
+  - `rammp_ui_bridge_interfaces` gains `SetEngineOverlayVisible` (`srv`) (#34):
+    `uint8[16] token`, `bool visible` -> `bool accepted`, `string message`. The
+    engine holding `~/ui_control` shows or hides its overlay camera feed in UE.
+    It is a UE-side toggle only: `EngineOverlayImage` frames keep flowing.
+
 - **2.0.0**, 2026-11-03. **MAJOR**: in `rammp_arm_interfaces` one field is
   retyped in place, one message is renamed, and the Cartesian fields change
-  frame; `rammp_base_interfaces` replaces one message. Everything else is
+  frame; `rammp_base_interfaces` replaces one message; `rammp_common_interfaces`
+  renames and retypes one field of `EStop`. Everything else is
   additive.
   (An in-tree 1.2.0 of 2026-10-09 carried `rammp_orchestrator_interfaces` but
   was never tagged; this release subsumes it.)
@@ -176,6 +200,14 @@ Every package carries the repo's one version.
     `SYSTEM_STATE_*` constants, where `MibState` collapsed them to four and lost
     `ESTOP`, `ERROR` and the autonomy states. `SeatState` no longer has its own
     topic: the seat pose arrives inside `MibStatus`.
+  - **`rammp_common_interfaces/EStop` mirrors rammp-rtps's `rammp::EStop`**
+    (#30). `bool engaged` is renamed and retyped `uint8 state`
+    (`STATE_NOT_ENGAGED = 0`, `STATE_ENGAGED = 1`, the same byte values on the
+    wire), and `pub_seq`, `clear_target` and `clear_pub_seq` are appended. The
+    meaning changes too: a `NOT_ENGAGED` message is a heartbeat, not a clear;
+    only a clear attempt (`clear_target` set) from the clearer, the MIB, ends a
+    stop. Every `/estop` publisher and subscriber moves to the new fields and
+    rules (kinova-gen3-ros2 2.0.0 does).
   - `EeState` appends `geometry_msgs/Wrench wrench` (#13). Appended at the end,
     so it is safe on the wire, but a nested message cannot carry a default: an
     old driver's `EeState` reads as a zero wrench, not a missing one.
@@ -269,6 +301,12 @@ Every package carries the repo's one version.
   two new packages but was never tagged; this release subsumes it.)
 - **1.0.0**, 2026-09-10: first tag.
 
+### Branches
+
+`dev` is the default branch, and every feature PR targets it. `main` takes only
+the release PR from `dev`, so `dev` is always `main` plus newer work. A ruleset
+on `main` enforces this (the `source-is-dev` check).
+
 ### Release order
 
 These packages depend on nothing, so they always release first. Tag here, then
@@ -284,7 +322,7 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v2.0.0
+  version: v2.1.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules

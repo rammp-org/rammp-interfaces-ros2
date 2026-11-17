@@ -1,0 +1,23 @@
+# Served by the UI bridge at ~/engine_overlay/set_visible. Lets the engine
+# that currently holds ui_control (see rammp_common_interfaces/AcquireControl,
+# called against the bridge's own ~/ui_control/acquire_control arbitration
+# server) show or hide its overlay camera stream in UE -- e.g. to blank the
+# overlay during a transition between sub-steps, then resume showing it
+# again.
+#
+# This is purely a UE-side toggle: the bridge keeps forwarding
+# EngineOverlayImage frames to UE's streaming server exactly as always: the
+# handler just validates the token and calls UE's Remote Control
+# "Open Camera Feed" (visible=true) or "Close Camera Feed" (visible=false)
+# UFUNCTION, no parameters. UE itself owns showing/hiding the overlay
+# widget/material.
+#
+# Refused (accepted=false) if `token` doesn't match the token currently
+# granted by ~/ui_control/acquire_control -- same check UpdateUserInputPanel
+# .srv and EngineOverlayImage's own token field use.
+
+uint8[16] token
+bool visible
+---
+bool accepted
+string message

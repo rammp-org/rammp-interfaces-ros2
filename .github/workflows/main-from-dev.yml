@@ -1,0 +1,20 @@
+# main only takes the release PR from dev, so dev is always main plus newer work.
+# The main ruleset requires this job.
+name: main-from-dev
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+jobs:
+  source-is-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR into main comes from dev
+        env:
+          HEAD: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ "$HEAD" != dev ] || [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::PRs into main come from dev only (this one is from $HEAD_REPO:$HEAD). Retarget it to dev."
+            exit 1
+          fi
