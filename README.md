@@ -146,8 +146,8 @@ runtime can tell, and these rules can relax.
 
 Every package carries the repo's one version.
 
-- **Unreleased.** Minor: two new types in `rammp_arm_interfaces`. Nothing
-  existing changes.
+- **2.2.0**, 2026-11-18. Minor: two new types in `rammp_arm_interfaces`.
+  Nothing existing changes.
   - `AddObstacles` (`srv`) and `CollisionBox` (`msg`) (#38, RAMMP-CuRobo#53): a
     capability engine adds boxes to the arm's motion planner's collision world
     over ROS, with no file to share between containers. `string frame_id` (the
@@ -334,7 +334,7 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v2.1.0
+  version: v2.2.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules
