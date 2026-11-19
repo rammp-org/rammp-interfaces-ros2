@@ -148,14 +148,15 @@ Every package carries the repo's one version.
 
 - **Unreleased.** Minor: two new types in `rammp_arm_interfaces`. Nothing
   existing changes.
-  - `AddObstacles` (`srv`) and `CollisionBox` (`msg`) (RAMMP-CuRobo#53): a
+  - `AddObstacles` (`srv`) and `CollisionBox` (`msg`) (#38, RAMMP-CuRobo#53): a
     capability engine adds boxes to the arm's motion planner's collision world
     over ROS, with no file to share between containers. `string frame_id` (the
     planning frame, `arm_mount`) and `CollisionBox[] boxes` (`name`,
     `geometry_msgs/Pose pose`, `geometry_msgs/Vector3 dims`, full extents) ->
     `bool success`, `string message`. Boxes accumulate and are anonymous;
-    `/reset` is how they leave. Served by RAMMP-CuRobo as
-    `/rammp_curobo/add_obstacles`.
+    `/reset` is how they leave, and any replacement of the planner's scene
+    (RAMMP-CuRobo's `SetWorld`, from any caller) drops them too. Served by
+    RAMMP-CuRobo as `/rammp_curobo/add_obstacles`.
 
 - **2.1.0**, 2026-11-16. Minor: one field appended to an action goal, with a
   default that means today's behaviour, and three new types. Nothing existing

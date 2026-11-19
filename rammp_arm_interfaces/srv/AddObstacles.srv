@@ -3,7 +3,8 @@
 # scene, any added before, the robot's own fixed geometry) all stay. Calls
 # are anonymous and accumulate; nothing here removes a box. Publishing
 # std_msgs/Empty on /reset returns the planner to the world it loaded at
-# boot, dropping every added box, from every caller.
+# boot, dropping every added box, from every caller. Replacing the planner's
+# scene by any other means (a whole-world push, by anyone) drops them too.
 #
 # Refused whole, and the world before it stays: a frame that is not the
 # planning frame (the planner transforms nothing), a name already in the
