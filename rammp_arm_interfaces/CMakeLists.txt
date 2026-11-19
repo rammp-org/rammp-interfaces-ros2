@@ -32,5 +32,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SetContactThresholds.srv"
   "msg/GripperSetpoint.msg"
   "msg/GripperState.msg"
+  "msg/CollisionBox.msg"
+  "srv/AddObstacles.srv"
   DEPENDENCIES builtin_interfaces std_msgs trajectory_msgs control_msgs action_msgs geometry_msgs)
 ament_package()

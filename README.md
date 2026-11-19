@@ -7,7 +7,7 @@ packages — a consumer depends on the surface it uses, not on all of them.
 | --- | --- |
 | `rammp_common_interfaces` | what no single subsystem owns: emergency stop, and the arbitration protocol for taking control of a resource |
 | `rammp_peripheral_interfaces` | optional add-on devices broadcasting their input for any consumer: the joystick |
-| `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves, setpoint streaming, the gripper |
+| `rammp_arm_interfaces` | commanding and observing an arm: trajectories, planned moves and the planner's collision world, setpoint streaming, the gripper |
 | `rammp_base_interfaces` | observing and commanding the mobile base: the MIB's status, seat state, velocity and pose setpoints |
 | `rammp_orchestrator_interfaces` | the contract between the Orchestrator and any capability engine: manifest registration (object-bound or system-level, e.g. error recovery), object selection, action execution with progress/result, intent delegation between engines, and World State read/write |
 | `rammp_perception_interfaces` | what perception sees: detected objects with masks (`ObjectDetections`, the one detection message every perception node publishes), one-shot detection, tracking sessions |
@@ -145,6 +145,18 @@ runtime can tell, and these rules can relax.
 ### Version history
 
 Every package carries the repo's one version.
+
+- **2.2.0**, 2026-11-18. Minor: two new types in `rammp_arm_interfaces`.
+  Nothing existing changes.
+  - `AddObstacles` (`srv`) and `CollisionBox` (`msg`) (#38, RAMMP-CuRobo#53): a
+    capability engine adds boxes to the arm's motion planner's collision world
+    over ROS, with no file to share between containers. `string frame_id` (the
+    planning frame, `arm_mount`) and `CollisionBox[] boxes` (`name`,
+    `geometry_msgs/Pose pose`, `geometry_msgs/Vector3 dims`, full extents) ->
+    `bool success`, `string message`. Boxes accumulate and are anonymous;
+    `/reset` is how they leave, and any replacement of the planner's scene
+    (RAMMP-CuRobo's `SetWorld`, from any caller) drops them too. Served by
+    RAMMP-CuRobo as `/rammp_curobo/add_obstacles`.
 
 - **2.1.0**, 2026-11-16. Minor: one field appended to an action goal, with a
   default that means today's behaviour, and three new types. Nothing existing
@@ -322,7 +334,7 @@ Pin an exact tag, not a branch:
 rammp-interfaces-ros2:
   type: git
   url: https://github.com/rammp-org/rammp-interfaces-ros2.git
-  version: v2.1.0
+  version: v2.2.0
 ```
 
 A colcon workspace holds exactly one version of a package, so "can these modules
